@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Network Lab 80 — 3D Lab in a Box</title>
+<meta name="description" content="Interactive 3D model of an 80-workstation campus lab network (VLANs, Layer 3 core switching, DHCP relay, NAT) designed in Cisco Packet Tracer by HomemadeICT.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Network Lab 80 — Interactive 3D Lab in a Box">
+<meta property="og:description" content="Orbit, zoom and click through an 80-workstation Cisco Packet Tracer campus network: 4 VLANs, L3 core switch, DHCP relay, NAT/PAT and live packet animation.">
+<meta property="og:url" content="https://theekmind.com/network-lab-80/">
+<link rel="canonical" href="https://theekmind.com/network-lab-80/">
+<link rel="icon" href="../assets/favicon.ico" sizes="any">
+<meta property="og:image" content="https://theekmind.com/assets/shots/lab80-og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0f17;--panel:rgba(13,17,24,.94);--line:#232b38;--txt:#e6edf3;--mut:#8b98a9;--v10:#e5484d;--v20:#3b82f6;--v30:#22c55e;--v40:#a855f7;--acc:#ffd166}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:radial-gradient(1200px 800px at 35% 30%,#1c2638 0%,#0e131d 55%,#080b11 100%);color:var(--txt);font-family:Inter,system-ui,sans-serif}
+#stage{position:fixed;left:0;top:0;bottom:0;right:360px}
+#stage canvas{display:block}
+.labels{position:absolute;top:0;left:0;pointer-events:none}
+.lbl{font:600 11px Inter,sans-serif;padding:3px 7px;border-radius:6px;background:rgba(9,12,18,.84);border:1px solid #3a4352;color:#e6edf3;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.lbl.room{font-size:12px;padding:5px 9px;text-align:center;line-height:1.35;border-width:1.5px}
+.lbl.room b{display:block;font-weight:800;letter-spacing:.08em;font-size:12px}
+.lbl.room span{font:500 10px 'JetBrains Mono',monospace;color:#b7c2d0}
+.lbl.pcn{font:600 9px 'JetBrains Mono',monospace;padding:1px 4px;border-radius:4px}
+.lbl.dev{font-size:10.5px}
+#panel{position:fixed;right:0;top:0;bottom:0;width:360px;background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;padding:18px 18px 28px;backdrop-filter:blur(6px)}
+#panel::-webkit-scrollbar{width:8px}#panel::-webkit-scrollbar-thumb{background:#273142;border-radius:4px}
+h1{font-size:18px;margin:0 0 2px;font-weight:800;letter-spacing:-.01em}
+.sub{color:var(--mut);font-size:12px;margin-bottom:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.chip{font:600 11px Inter;padding:4px 8px;border-radius:999px;background:#151c27;border:1px solid var(--line);color:#c9d3df}
+.chip b{color:#fff}
+h2{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin:16px 0 8px;font-weight:700}
+.btns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.btn{font:600 12px Inter;color:#dbe3ec;background:#161d28;border:1px solid #273142;border-radius:8px;padding:7px 6px;cursor:pointer;transition:.15s}
+.btn:hover{background:#1e2735;border-color:#3a4658}
+.btn.on{background:#ffd16622;border-color:var(--acc);color:#ffe7a6}
+.seg{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.seg .btn{font-size:11px;padding:6px 2px}
+.row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid #1a212c}
+.row:last-child{border-bottom:0}
+.sw{position:relative;width:34px;height:19px;flex:0 0 auto}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:#2a3342;border-radius:20px;transition:.2s;cursor:pointer}
+.sw span:before{content:"";position:absolute;width:15px;height:15px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.2s}
+.sw input:checked+span{background:#d9a93a}
+.sw input:checked+span:before{transform:translateX(15px)}
+.vl{display:flex;align-items:center;gap:8px}
+.dot{width:12px;height:12px;border-radius:3px;flex:0 0 auto}
+.mono{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#aab6c5}
+.counters{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.ctr{background:#121923;border:1px solid var(--line);border-radius:8px;padding:6px;text-align:center}
+.ctr b{display:block;font:700 15px 'JetBrains Mono',monospace}
+.ctr span{font-size:9.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+#info{background:#111823;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:6px;min-height:60px}
+#info .t{font-weight:800;font-size:15px;display:flex;align-items:center;gap:8px}
+#info .ty{color:var(--mut);font-size:12px;margin:2px 0 8px}
+#info table{width:100%;border-collapse:collapse;font-size:12px}
+#info td{padding:4px 0;vertical-align:top;border-top:1px solid #1b2330}
+#info td:first-child{color:var(--mut);width:36%;padding-right:8px}
+#info td:last-child{font-family:'JetBrains Mono',monospace;font-size:11px;color:#d7e0ea}
+#info .acts{display:flex;gap:6px;margin-top:10px}
+#info .acts .btn{flex:1}
+.empty{color:var(--mut);font-size:12.5px;line-height:1.5}
+details{background:#111823;border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-top:8px}
+summary{cursor:pointer;font-weight:700;font-size:13px}
+details table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px}
+details td,details th{padding:4px 4px;border-top:1px solid #1b2330;text-align:left}
+details th{color:var(--mut);font-weight:600}
+details ul{margin:8px 0 2px;padding-left:18px;font-size:12px;line-height:1.55;color:#c9d3df}
+.ok{color:#4ade80}.no{color:#f87171}
+#log{display:none;position:absolute;left:12px;bottom:12px;max-width:min(560px,70%);font:500 11px 'JetBrains Mono',monospace;pointer-events:none}
+#log div{background:rgba(9,12,18,.78);border-left:3px solid #556;padding:4px 8px;margin-top:3px;border-radius:4px;color:#cfd8e3;animation:fi .3s}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}}
+#hint{position:absolute;left:12px;top:12px;font-size:11.5px;color:#9fb0c3;background:rgba(9,12,18,.7);padding:6px 10px;border-radius:8px;border:1px solid #232b38}
+#tip{position:absolute;pointer-events:none;font:600 11.5px Inter;background:#0b0f16;border:1px solid var(--acc);color:#fff;padding:4px 8px;border-radius:6px;display:none;white-space:nowrap;transform:translate(12px,12px)}
+#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-weight:600;color:#9fb0c3;letter-spacing:.05em}
+body.showlog #log{display:block}
+#vbar{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:4px;align-items:center;background:rgba(9,12,18,.86);border:1px solid #2a3342;border-radius:12px;padding:5px;z-index:5;max-width:calc(100% - 24px);overflow-x:auto;backdrop-filter:blur(6px)}
+#vbar button{font:600 12px Inter;color:#dbe3ec;background:transparent;border:1px solid transparent;border-radius:8px;padding:6px 10px;cursor:pointer;white-space:nowrap}
+#vbar button:hover{background:#1e2735}
+#vbar button.on{background:#ffd16622;border-color:var(--acc);color:#ffe7a6}
+#vbar span{width:1px;height:20px;background:#2a3342;margin:0 4px;flex:0 0 auto}
+#views .btn.on{background:#ffd16622;border-color:var(--acc);color:#ffe7a6}
+#pbtn{position:absolute;right:12px;top:12px;font:600 12px Inter;color:#dbe3ec;background:rgba(9,12,18,.8);border:1px solid #2a3342;border-radius:8px;padding:7px 11px;cursor:pointer;z-index:5}
+#pbtn:hover{border-color:var(--acc)}
+body.full #stage{right:0;bottom:0}
+body.full #panel{display:none}
+@media (max-width:820px){
+ body:not(.full) #stage{right:0;bottom:44vh}
+ #stage{right:0}
+ #panel{top:auto;height:44vh;width:100%;border-left:0;border-top:1px solid var(--line)}
+ #log{display:none}
+}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<div id="loading">Building the lab…</div>
+<div id="stage">
+  <div id="hint">Drag to orbit · Right-drag to pan · Scroll zooms to cursor · <b>Double-click</b> to fly in · Click a device for details</div>
+  <div id="log"></div>
+  <div id="tip"></div>
+  <div id="vbar"><button data-v="overview">Overview</button><button data-v="staff">Staff room</button><button data-v="rack">Server rack</button><button data-v="hw">Hardware</button><button data-v="ndict">NDICT</button><button data-v="gfx">Graphics</button><button data-v="top">Floor plan</button><span></span><button data-t="tWalls">Walls</button><button data-t="tCase">Glass</button><button data-t="tLabels">Labels</button></div>
+  <button id="pbtn" title="Show / hide the side panel">Hide panel ⟩</button>
+</div>
+
+<aside id="panel">
+  <div style="margin-bottom:10px;font-size:13px"><a href="../network-lab.html" style="color:var(--acc);text-decoration:none">&larr; Case study</a> &middot; <a href="../" style="color:var(--acc);text-decoration:none">theekmind.com</a></div>
+  <h1>Network Lab 80 — Lab in a Box</h1>
+  <div class="sub">Interactive 3D model of an 80-workstation campus lab network designed in Cisco Packet Tracer · <a href="https://github.com/HomemadeICT/networking-packet-tracer-labs/tree/main/06_Final_Project" style="color:#ffd166">View project on GitHub ↗</a></div>
+  <div class="chips">
+    <span class="chip"><b>80</b> PCs</span><span class="chip"><b>7</b> laptops</span><span class="chip"><b>3</b> printers</span>
+    <span class="chip"><b>1</b> L3 core + <b>5</b> access sw</span><span class="chip"><b>4</b> VLANs</span><span class="chip"><b>1</b> DHCP/DNS/WEB</span>
+  </div>
+
+  <h2>1 · Camera angles</h2>
+  <div class="btns" id="views" style="grid-template-columns:repeat(4,1fr)">
+    <button class="btn" data-v="overview">Overview</button>
+    <button class="btn" data-v="staff">Staff room</button>
+    <button class="btn" data-v="rack">Server rack</button>
+    <button class="btn" data-v="top">Floor plan</button>
+    <button class="btn" data-v="hw">Hardware</button>
+    <button class="btn" data-v="ndict">NDICT</button>
+    <button class="btn" data-v="gfx">Graphics</button>
+  </div>
+  <div class="mono" style="margin-top:6px">Tip: scroll zooms toward the cursor · double-click any spot to fly in close</div>
+
+  <h2>2 · Layers</h2>
+  <div class="row"><span>Glass case lid open</span><label class="sw"><input type="checkbox" id="tLid" checked><span></span></label></div>
+  <div class="row"><span>Glass case</span><label class="sw"><input type="checkbox" id="tCase" checked><span></span></label></div>
+  <div class="row"><span>Walls</span><label class="sw"><input type="checkbox" id="tWalls" checked><span></span></label></div>
+  <div class="row"><span>Device labels</span><label class="sw"><input type="checkbox" id="tLabels" checked><span></span></label></div>
+  <div class="row"><span>PC numbers</span><label class="sw"><input type="checkbox" id="tPcn"><span></span></label></div>
+  <div class="row"><span>Traffic log popup</span><label class="sw"><input type="checkbox" id="tLog"><span></span></label></div>
+  <div class="row"><span>Auto-rotate</span><label class="sw"><input type="checkbox" id="tRot"><span></span></label></div>
+
+  <h2>3 · Selected device</h2>
+  <div id="info"><div class="empty">Click a PC, switch, the router, core switch, server or rack to see its configuration from the project.</div></div>
+
+  <h2>4 · VLANs &amp; cables</h2>
+  <div id="vlans"></div>
+
+  <h2>5 · Live traffic simulation</h2>
+  <div class="seg" id="modes">
+    <button class="btn" data-m="off">Off</button>
+    <button class="btn on" data-m="mixed">Mixed</button>
+    <button class="btn" data-m="dhcp">DHCP</button>
+    <button class="btn" data-m="inter">Inter-VLAN</button>
+    <button class="btn" data-m="internet">Internet</button>
+  </div>
+  <div class="row" style="margin-top:6px"><span>Apply ACL lab isolation <span class="mono">(planned step)</span></span><label class="sw"><input type="checkbox" id="acl"><span></span></label></div>
+  <div class="counters">
+    <div class="ctr"><b id="cD">0</b><span>DHCP</span></div>
+    <div class="ctr"><b id="cR">0</b><span>Routed</span></div>
+    <div class="ctr"><b id="cN">0</b><span>NAT out</span></div>
+    <div class="ctr"><b id="cX" style="color:#f87171">0</b><span>ACL drop</span></div>
+  </div>
+
+  <h2>6 · Design notes</h2>
+  <details open><summary>IP addressing plan</summary>
+    <table>
+      <tr><th>VLAN</th><th>Subnet</th><th>Gateway (SVI)</th></tr>
+      <tr><td><span class="dot" style="display:inline-block;background:var(--v10)"></span> 10 HW</td><td class="mono">192.168.10.0/24</td><td class="mono">.10.1</td></tr>
+      <tr><td><span class="dot" style="display:inline-block;background:var(--v20)"></span> 20 NDICT</td><td class="mono">192.168.20.0/24</td><td class="mono">.20.1</td></tr>
+      <tr><td><span class="dot" style="display:inline-block;background:var(--v30)"></span> 30 GFX</td><td class="mono">192.168.30.0/24</td><td class="mono">.30.1</td></tr>
+      <tr><td><span class="dot" style="display:inline-block;background:var(--v40)"></span> 40 Staff</td><td class="mono">192.168.40.0/24</td><td class="mono">.40.1</td></tr>
+    </table>
+    <ul><li>Server 192.168.40.5 · Router LAN 192.168.40.254 · WAN 203.0.113.1/30</li><li>DHCP pools start at .10 (245 hosts) · relay via <span class="mono">ip helper-address</span></li></ul>
+  </details>
+  <details><summary>Security policy (ACL matrix)</summary>
+    <table>
+      <tr><th>From \ To</th><th>HW</th><th>NDICT</th><th>GFX</th><th>Staff/Net</th></tr>
+      <tr><td>HW (10)</td><td>—</td><td class="no">deny</td><td class="no">deny</td><td class="ok">permit</td></tr>
+      <tr><td>NDICT (20)</td><td class="no">deny</td><td>—</td><td class="no">deny</td><td class="ok">permit</td></tr>
+      <tr><td>GFX (30)</td><td class="no">deny</td><td class="no">deny</td><td>—</td><td class="ok">permit</td></tr>
+      <tr><td>Staff (40)</td><td class="ok">permit</td><td class="ok">permit</td><td class="ok">permit</td><td class="ok">permit</td></tr>
+    </table>
+    <ul><li>ACLs are documented as a future step — toggle above to preview the effect.</li><li>Port security (sticky MAC, restrict) tested on HW-Lab-SW.</li></ul>
+  </details>
+  <details><summary>Physical build &amp; hardware list</summary>
+    <ul>
+      <li>Building 7 m wide: Staff + server room 2.8 m · Hardware 6 m · NDICT 8.8 m · Graphics 11.8 m, 30 cm walls between labs</li>
+      <li>Distributed access switches per lab (keeps Cat6 runs well under 100 m), one trunk uplink per lab along the wall trunking</li>
+      <li>TP-Link TL-ER6120 SafeStream dual-WAN VPN router</li>
+      <li>TP-Link TL-SG3428 JetStream 24-port L2+ managed switch · TL-SG2218 16-port L2 managed switch</li>
+      <li>CB Premium 6U 19" wall rack · dual 24 V 120 mm cooling fans + 24 V-2 A PSU · 3U PDU · DCP 650 VA UPS</li>
+      <li>Cat6 cable, RJ45 connectors, AMP Cat6 keystone jacks, single/dual faceplates, 30 mm sunk boxes, cable ties &amp; trunking</li>
+    </ul>
+  </details>
+  <details><summary>Configuration lifecycle</summary>
+    <ul>
+      <li>1 DHCP server pools → 2 Core switch (ip routing, SVIs, relay, trunks) → 3–7 access switches → 8 end devices (DHCP)</li>
+      <li>9 Router0 WAN + NAT/PAT → 10 ACLs → 11 SSH → 12 port security rollout → 13 end-to-end verification</li>
+    </ul>
+  </details>
+</aside>
+
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {CSS2DRenderer, CSS2DObject} from 'three/addons/renderers/CSS2DRenderer.js';
+
+/* ---------- basics ---------- */
+const stage=document.getElementById('stage');
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+stage.prepend(renderer.domElement);
+const labelR=new CSS2DRenderer(); labelR.domElement.className='labels'; stage.insertBefore(labelR.domElement,document.getElementById('hint'));
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(40,1,0.05,400);
+camera.position.set(46,40,58);
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true; controls.dampingFactor=.08; controls.maxPolarAngle=1.5; controls.minDistance=.4; controls.maxDistance=90; controls.autoRotateSpeed=.6; controls.zoomToCursor=true; controls.screenSpacePanning=true; controls.zoomSpeed=1.2;
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h);labelR.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}
+addEventListener('resize',resize); resize();
+
+scene.add(new THREE.HemisphereLight(0xe3ecff,0x2a2e36,1.15));
+const sun=new THREE.DirectionalLight(0xfff6e8,2.1); sun.position.set(16,32,14); sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera,{left:-24,right:24,top:24,bottom:-24,near:1,far:90}); sun.shadow.bias=-.0004; sun.shadow.normalBias=.02;
+scene.add(sun);
+const fill=new THREE.DirectionalLight(0x9fb7ff,.5); fill.position.set(-20,12,-18); scene.add(fill);
+
+/* ---------- helpers ---------- */
+const X0=-3.5, Z0=-15.1;
+const P=(x,y,z)=>new THREE.Vector3(x+X0,y,z+Z0);
+const VL={10:{c:0xe5484d,css:'#e5484d',name:'Hardware_Lab',lab:'Hardware Lab'},20:{c:0x3b82f6,css:'#3b82f6',name:'NDICT_Lab',lab:'NDICT Lab'},30:{c:0x22c55e,css:'#22c55e',name:'Graphics_Lab',lab:'Graphics Lab'},40:{c:0xa855f7,css:'#a855f7',name:'Staff',lab:'Staff / Server'}};
+const M=(c,o={})=>new THREE.MeshStandardMaterial({color:c,roughness:.7,metalness:.05,...o});
+const GC={}; const geo=(w,h,d)=>{const k=w+'|'+h+'|'+d;return GC[k]||(GC[k]=new THREE.BoxGeometry(w,h,d));};
+function bx(parent,w,h,d,mat,x,y,z,cast=true){const m=new THREE.Mesh(geo(w,h,d),mat);m.position.set(x,y,z);m.castShadow=cast;m.receiveShadow=true;parent.add(m);return m;}
+function wb(w,h,d,mat,x,y,z,parent=scene,cast=true){return bx(parent,w,h,d,mat,x+X0,y,z+Z0,cast);}
+const cylG=new THREE.CylinderGeometry(1,1,1,16);
+function cyl(parent,r,h,mat,x,y,z){const m=new THREE.Mesh(cylG,mat);m.scale.set(r,h,r);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m;}
+function canvasTex(w,h,draw){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return t;}
+const allLabels=[], pcLabels=[];
+function label(html,cls,pos,color,list=allLabels){const d=document.createElement('div');d.className='lbl '+(cls||'');d.innerHTML=html;if(color)d.style.borderColor=color;const o=new CSS2DObject(d);o.position.copy(pos);scene.add(o);list.push(o);return o;}
+
+const mats={
+ desk:M(0x30353d,{roughness:.55}), leg:M(0x8f99a6,{metalness:.6,roughness:.35}),
+ mon:M(0x14171c,{roughness:.4}), tower:M(0x262a31,{roughness:.5}), kb:M(0x1a1d22),
+ chair:M(0x3b4554,{roughness:.8}), chairB:M(0x1d2026), white:M(0xe9ecef), grey:M(0xc9ced5),
+ alu:M(0xb8bec6,{metalness:.55,roughness:.3}), rack:M(0x1b1f25,{metalness:.5,roughness:.45}),
+ wood:M(0x8a5a33,{roughness:.6}), teacher:M(0x6b4a2f,{roughness:.6}),
+ wall:M(0xf1eee7,{roughness:.92}), cap:M(0x23272e), door:M(0x7a4d28,{roughness:.55}),
+ duct:new THREE.MeshStandardMaterial({color:0xd7dbe0,transparent:true,opacity:.35,roughness:.4,depthWrite:false}),
+ blue:M(0x0b1220,{emissive:0x38bdf8,emissiveIntensity:1.4}), green:M(0x0b1a10,{emissive:0x22e36a,emissiveIntensity:1.5})
+};
+const vlanCable={}; const vlanCableTrunk={};
+for(const v of [10,20,30,40]){vlanCable[v]=M(VL[v].c,{roughness:.45,emissive:VL[v].c,emissiveIntensity:.12});vlanCableTrunk[v]=M(VL[v].c,{roughness:.35,emissive:VL[v].c,emissiveIntensity:.3});}
+const wanMat=M(0xf59e0b,{emissive:0xf59e0b,emissiveIntensity:.35});
+
+/* ---------- glass display box ---------- */
+const plinthMat=M(0x4a2f1d,{roughness:.55});
+const plinth=bx(scene,8.8,.5,32.8,plinthMat,0,-.31,0); plinth.castShadow=true;
+bx(scene,9.0,.06,33.0,M(0x2b1b10,{roughness:.5}),0,-.59,0);
+const shadowPlane=new THREE.Mesh(new THREE.PlaneGeometry(90,90),new THREE.ShadowMaterial({opacity:.28}));shadowPlane.rotation.x=-Math.PI/2;shadowPlane.position.y=-.62;shadowPlane.receiveShadow=true;scene.add(shadowPlane);
+function plaque(text,sub,w){return canvasTex(2048,128,(g,W,H)=>{const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#e3c27a');gr.addColorStop(.5,'#c79a49');gr.addColorStop(1,'#a87b33');g.fillStyle=gr;g.fillRect(0,0,W,H);g.strokeStyle='#6b4a1c';g.lineWidth=6;g.strokeRect(6,6,W-12,H-12);g.fillStyle='#2b1d0e';g.textAlign='center';g.font='800 54px Inter, sans-serif';g.fillText(text,W/2,64);g.font='600 30px Inter, sans-serif';g.fillText(sub,W/2,106);});}
+{const m=new THREE.Mesh(new THREE.PlaneGeometry(14,.4),new THREE.MeshStandardMaterial({map:plaque('NETWORK LAB · 80 WORKSTATIONS','HomemadeICT · Hierarchical campus network · VLAN 10 / 20 / 30 / 40 · L3 core switching'),metalness:.6,roughness:.35}));m.rotation.y=Math.PI/2;m.position.set(4.405,-.31,0);scene.add(m);}
+{const m=new THREE.Mesh(new THREE.PlaneGeometry(7,.4),new THREE.MeshStandardMaterial({map:plaque('NETWORK LAB 80','Cisco Packet Tracer · Final Project'),metalness:.6,roughness:.35}));m.position.set(0,-.31,16.405);scene.add(m);}
+
+const caseG=new THREE.Group(); scene.add(caseG);
+const glassMat=new THREE.MeshPhysicalMaterial({color:0xd7ecff,transparent:true,opacity:.09,roughness:.05,metalness:0,depthWrite:false,side:THREE.DoubleSide});
+const frameMat=M(0x15181d,{metalness:.7,roughness:.3});
+const GH=3.1, GX=4.35, GZ=16.35, GY0=-.06;
+{const s=new THREE.Mesh(new THREE.PlaneGeometry(GZ*2,GH),glassMat);s.rotation.y=Math.PI/2;s.position.set(GX,GY0+GH/2,0);caseG.add(s);
+ const s2=s.clone();s2.position.x=-GX;caseG.add(s2);
+ const e=new THREE.Mesh(new THREE.PlaneGeometry(GX*2,GH),glassMat);e.position.set(0,GY0+GH/2,GZ);caseG.add(e);const e2=e.clone();e2.position.z=-GZ;caseG.add(e2);
+ for(const sx of[-1,1])for(const sz of[-1,1])bx(caseG,.07,GH,.07,frameMat,sx*GX,GY0+GH/2,sz*GZ);
+ for(const y of[GY0+.03,GY0+GH]){for(const sx of[-1,1])bx(caseG,.06,.06,GZ*2,frameMat,sx*GX,y,0,false);for(const sz of[-1,1])bx(caseG,GX*2,.06,.06,frameMat,0,y,sz*GZ,false);}
+}
+const lid=new THREE.Group(); scene.add(lid);
+const lidGlass=new THREE.MeshPhysicalMaterial({color:0xd7ecff,transparent:true,opacity:.12,roughness:.05,depthWrite:false,side:THREE.DoubleSide});
+const lidFrame=M(0x15181d,{metalness:.7,roughness:.3,transparent:true});
+{const t=new THREE.Mesh(new THREE.PlaneGeometry(GX*2,GZ*2),lidGlass);t.rotation.x=-Math.PI/2;t.position.y=GY0+GH+.04;lid.add(t);
+ for(const sx of[-1,1])bx(lid,.08,.05,GZ*2+.08,lidFrame,sx*GX,GY0+GH+.06,0,false);for(const sz of[-1,1])bx(lid,GX*2+.08,.05,.08,lidFrame,0,GY0+GH+.06,sz*GZ,false);
+ bx(lid,.12,.06,1.6,lidFrame,0,GY0+GH+.12,0,false);}
+
+/* ---------- building shell ---------- */
+const wallsG=new THREE.Group(); scene.add(wallsG);
+const H=1.4;
+wb(7,.06,30.2,M(0x9aa0a8,{roughness:.95}),3.5,-.03,15.1,scene,false);
+const tileTex=canvasTex(128,128,(g)=>{g.fillStyle='#ffffff';g.fillRect(0,0,128,128);g.strokeStyle='rgba(0,0,0,.13)';g.lineWidth=2;g.strokeRect(0,0,128,128);g.fillStyle='rgba(0,0,0,.025)';g.fillRect(4,4,60,60);g.fillRect(64,64,60,60);});
+tileTex.wrapS=tileTex.wrapT=THREE.RepeatWrapping;
+function floor(x1,z1,x2,z2,tint){const t=tileTex.clone();t.needsUpdate=true;t.repeat.set((x2-x1)/.6,(z2-z1)/.6);const m=new THREE.Mesh(new THREE.PlaneGeometry(x2-x1,z2-z1),new THREE.MeshStandardMaterial({map:t,color:tint,roughness:.85}));m.rotation.x=-Math.PI/2;m.position.copy(P((x1+x2)/2,.003,(z1+z2)/2));m.receiveShadow=true;scene.add(m);}
+floor(.1,.1,3.45,2.8,0xefe6f6); floor(3.55,.1,6.9,2.8,0xe5e6ec);
+floor(.1,3.0,6.9,9.0,0xf6e3e3); floor(.1,9.3,6.9,18.1,0xe2ebf8); floor(.1,18.4,6.9,30.1,0xe2f3e5);
+function wall(w,d,x,z){wb(w,H,d,mats.wall,x,H/2,z,wallsG);wb(w+.004,.03,d+.004,mats.cap,x,H+.015,z,wallsG,false);}
+wall(.1,30.2,.05,15.1); wall(.1,30.2,6.95,15.1); wall(7,.1,3.5,.05); wall(7,.1,3.5,30.15);
+wall(7,.2,3.5,2.9); wall(7,.3,3.5,9.15); wall(7,.3,3.5,18.25); wall(.1,2.7,3.5,1.45);
+for(const z of[1.4,8.2,16.9,20.0]) wb(.04,1.25,.9,mats.door,.12,.63,z,wallsG);
+wb(.9,1.25,.04,mats.door,4.6,.63,2.78,wallsG);
+// wall trunking along right wall
+wb(.26,.09,29.5,mats.duct,6.74,.045,15.2,scene,false);
+
+/* ---------- registries ---------- */
+const DEV={}; const pickables=[];
+function reg(id,obj,info){obj.traverse(m=>{if(m.isMesh){m.userData.dev=id;pickables.push(m);}});DEV[id]=Object.assign({id,obj,screens:[]},info);return DEV[id];}
+const cablesG=new THREE.Group(); scene.add(cablesG);
+const cableGroups={10:new THREE.Group(),20:new THREE.Group(),30:new THREE.Group(),40:new THREE.Group(),wan:new THREE.Group()};
+Object.values(cableGroups).forEach(g=>cablesG.add(g));
+function dedupe(pts){const o=[pts[0]];for(let i=1;i<pts.length;i++)if(pts[i].distanceTo(o[o.length-1])>1e-4)o.push(pts[i]);return o;}
+function tube(pts,r,mat,group){pts=dedupe(pts);const path=new THREE.CurvePath();for(let i=0;i<pts.length-1;i++)path.add(new THREE.LineCurve3(pts[i],pts[i+1]));const len=path.getLength();const m=new THREE.Mesh(new THREE.TubeGeometry(path,Math.max(12,Math.ceil(len*10)),r,6,false),mat);m.castShadow=false;group.add(m);return pts;}
+const rev=a=>a.slice().reverse();
+const cat=(...arrs)=>dedupe([].concat(...arrs));
+
+/* ---------- textures for equipment faces ---------- */
+function portFace(n,bg,led,tag,sfp=0){return canvasTex(512,48,(g,W,H)=>{g.fillStyle=bg;g.fillRect(0,0,W,H);g.fillStyle='rgba(255,255,255,.08)';g.fillRect(0,0,W,3);const cols=Math.ceil(n/2),pw=Math.min(20,(W-150-sfp*26)/cols-3);for(let i=0;i<n;i++){const c=i>>1,r=i&1,x=110+c*(pw+3),y=6+r*19;g.fillStyle='#07090c';g.fillRect(x,y,pw,15);g.fillStyle=led;g.fillRect(x+2,y+2,4,3);}for(let i=0;i<sfp;i++){g.fillStyle='#07090c';g.fillRect(W-30-i*26,12,22,24);g.fillStyle='#ffb02e';g.fillRect(W-28-i*26,14,4,3);}g.fillStyle='#d8dee6';g.font='bold 13px Inter, sans-serif';g.fillText(tag,10,20);g.fillStyle=led;g.beginPath();g.arc(16,34,4,0,7);g.fill();});}
+const swTex=portFace(24,'#2b3542','#3dff7a','CISCO 2960',2);
+const coreTex=portFace(24,'#22303f','#3dff7a','CISCO 3560 L3',2);
+const routerTex=canvasTex(512,48,(g,W,H)=>{g.fillStyle='#1d3a4f';g.fillRect(0,0,W,H);g.fillStyle='#d8e6f0';g.font='bold 15px Inter';g.fillText('CISCO 2911 · Router0',12,29);for(let i=0;i<3;i++){g.fillStyle='#07090c';g.fillRect(300+i*30,12,24,22);g.fillStyle=i<2?'#3dff7a':'#ffb02e';g.fillRect(302+i*30,14,4,3);}g.fillStyle='#3dff7a';g.beginPath();g.arc(470,24,5,0,7);g.fill();});
+const patchTex=canvasTex(512,48,(g,W,H)=>{g.fillStyle='#1a1d22';g.fillRect(0,0,W,H);for(let i=0;i<24;i++){g.fillStyle='#f2f2f2';g.fillRect(40+i*18,14,13,18);g.fillStyle='#222';g.fillRect(43+i*18,18,7,9);}g.fillStyle='#bbb';g.font='bold 10px Inter';g.fillText('CAT6 PATCH',W-80,28);});
+const pduTex=canvasTex(512,48,(g,W,H)=>{g.fillStyle='#111';g.fillRect(0,0,W,H);for(let i=0;i<6;i++){g.fillStyle='#2c2c2c';g.fillRect(60+i*60,8,44,32);g.fillStyle='#000';g.fillRect(72+i*60,16,6,14);g.fillRect(88+i*60,16,6,14);}g.fillStyle='#ff3b30';g.fillRect(14,16,24,16);});
+const fanTex=canvasTex(512,48,(g,W,H)=>{g.fillStyle='#16191e';g.fillRect(0,0,W,H);for(const cx of[170,340]){g.strokeStyle='#5a636e';g.lineWidth=3;g.beginPath();g.arc(cx,24,19,0,7);g.stroke();g.beginPath();g.arc(cx,24,6,0,7);g.stroke();}});
+function faceMats(tex,body){const s=M(body,{metalness:.5,roughness:.4});const f=new THREE.MeshStandardMaterial({map:tex,roughness:.5,metalness:.2,emissive:0xffffff,emissiveMap:tex,emissiveIntensity:.25});return [s,s,s,s,f,s];}
+
+/* ---------- server room: rack, router, core, server, UPS ---------- */
+const rack=new THREE.Group(); rack.position.copy(P(5.8,1.1,.33)); scene.add(rack);
+bx(rack,.6,.48,.02,mats.rack,0,0,-.215); for(const sx of[-1,1])bx(rack,.02,.48,.45,mats.rack,sx*.29,0,0); for(const sy of[-1,1])bx(rack,.6,.02,.45,mats.rack,0,sy*.23,0);
+for(const sx of[-1,1])bx(rack,.02,.44,.02,mats.alu,sx*.25,0,.2);
+const unit=(tex,body,y,parent=rack)=>{const m=new THREE.Mesh(geo(.5,.045,.35),faceMats(tex,body));m.position.set(0,y,-.01);m.castShadow=true;parent.add(m);return m;};
+unit(fanTex,0x16191e,.19);
+const patchU=unit(patchTex,0x1a1d22,.135);
+const routerG=new THREE.Group(); rack.add(routerG); unit(routerTex,0x1d3a4f,.08,routerG);
+const coreG=new THREE.Group(); rack.add(coreG); unit(coreTex,0x22303f,.025,coreG);
+unit(canvasTex(512,48,(g,W,H)=>{g.fillStyle='#0d0f12';g.fillRect(0,0,W,H);for(let i=0;i<5;i++){g.fillStyle='#222';g.fillRect(40+i*92,10,70,28);}}),0x0d0f12,-.03);
+const pduU=unit(pduTex,0x111111,-.085);
+unit(fanTex,0x16191e,-.14);
+const rackFrame=new THREE.Group(); rack.add(rackFrame);
+const ups=new THREE.Group(); ups.position.copy(P(5.8,0,.32)); scene.add(ups);
+bx(ups,.16,.28,.38,M(0x17191d,{roughness:.5}),0,.14,0); bx(ups,.1,.03,.005,mats.blue,0,.22,.19);
+const serverG=new THREE.Group(); serverG.position.copy(P(4.3,0,.7)); scene.add(serverG);
+bx(serverG,.24,.56,.52,M(0x1f2329,{roughness:.45,metalness:.3}),0,.28,0);
+for(let i=0;i<4;i++)bx(serverG,.17,.012,.006,mats.blue,0,.42-i*.06,.262,false);
+bx(serverG,.03,.03,.006,mats.green,.07,.5,.262,false);
+// ISP cloud
+const isp=new THREE.Group(); isp.position.copy(P(5.9,2.2,-.72)); scene.add(isp);
+const cloudM=M(0xf8fafc,{roughness:.9,emissive:0x8fb3ff,emissiveIntensity:.15});
+for(const [x,y,z,r] of [[0,0,0,.22],[.22,-.04,0,.17],[-.22,-.05,0,.16],[.1,.12,0,.15],[-.1,.1,0,.14]]){const s=new THREE.Mesh(new THREE.SphereGeometry(r,18,14),cloudM);s.position.set(x,y,z);s.castShadow=true;isp.add(s);}
+
+// staff room furniture
+const staffTable=new THREE.Group(); scene.add(staffTable);
+wb(1.7,.04,.9,mats.wood,1.75,.73,1.5,staffTable); for(const sx of[-1,1])for(const sz of[-1,1])wb(.05,.71,.05,mats.leg,1.75+sx*.78,.355,1.5+sz*.38,staffTable);
+
+function makeChair(parent,x,z,rot=0,mat=mats.chair){const c=new THREE.Group();c.position.set(x,0,z);c.rotation.y=rot;bx(c,.42,.05,.42,mat,0,.46,0);bx(c,.42,.42,.04,mat,0,.7,.21);cyl(c,.025,.42,mats.leg,0,.23,0);cyl(c,.2,.025,mats.chairB,0,.02,0);parent.add(c);return c;}
+function screenMat(v){return new THREE.MeshStandardMaterial({color:0x0b0f14,emissive:VL[v].c,emissiveIntensity:.55,roughness:.3});}
+function makeLaptop(x,y,z,v,rot=0){const g=new THREE.Group();g.position.copy(P(x,y,z));g.rotation.y=rot;bx(g,.34,.018,.24,mats.alu,0,.009,0);const lidG=new THREE.Group();lidG.position.set(0,.018,-.12);lidG.rotation.x=-.25;g.add(lidG);bx(lidG,.34,.22,.012,mats.alu,0,.11,0);const sm=screenMat(v);const s=new THREE.Mesh(new THREE.PlaneGeometry(.31,.19),sm);s.position.set(0,.11,.007);lidG.add(s);scene.add(g);return {g,sm};}
+function makePrinter(x,z,cab=true){const g=new THREE.Group();g.position.copy(P(x,0,z));if(cab)bx(g,.55,.6,.45,mats.grey,0,.3,0);const by=cab?.6:.75;bx(g,.45,.22,.38,M(0xdfe3e8,{roughness:.5}),0,by+.11,0);bx(g,.3,.012,.18,M(0x2a2e35),0,by+.225,-.02);bx(g,.24,.006,.16,mats.white,0,by+.232,.08);bx(g,.03,.02,.005,mats.green,.17,by+.17,.19,false);scene.add(g);return g;}
+function teacherTable(x,z,w,d){const g=new THREE.Group();scene.add(g);wb(w,.05,d,mats.teacher,x,.73,z,g);wb(w-.06,.6,.03,mats.teacher,x,.42,z-d/2+.02,g);for(const sx of[-1,1])wb(.04,.71,d-.06,mats.teacher,x+sx*(w/2-.03),.355,z,g);return g;}
+
+/* ---------- core anchors & core links ---------- */
+const coreFront=(dx,dy=0)=>P(5.8+dx,1.135+dy,.56);
+const coreToRouter=tube([coreFront(-.2),P(5.6,1.135,.62),P(5.6,1.19,.62),P(5.65,1.19,.56)],.012,vlanCable[40],cableGroups[40]);
+const routerToISP=tube([P(5.95,1.19,.56),P(5.95,1.19,.64),P(5.95,1.55,.64),P(5.95,1.55,-.3),P(5.92,2.0,-.6),P(5.9,2.1,-.7)],.02,wanMat,cableGroups.wan);
+const coreToServer=tube([coreFront(-.16),P(5.64,1.135,.66),P(5.64,.03,.66),P(4.45,.03,.66),P(4.45,.3,.66)],.012,vlanCable[40],cableGroups[40]);
+
+/* ---------- info builders ---------- */
+const swInfo={};
+reg('Router0',routerG,{title:'Router0',type:'Edge router · NAT/PAT',vlan:40,rows:[
+ ['Model','Cisco 2911 (Packet Tracer)'],['Gi0/0 (LAN)','192.168.40.254/24 · ip nat inside → Core Fa0/2 (access VLAN 40)'],['Gi0/1 (WAN)','203.0.113.1/30 · ip nat outside → ISP'],['NAT','ACL NAT_INTERNAL (10/20/30/40.0/24) overload on Gi0/1'],['Return routes','10/20/30.0/24 → 192.168.40.1'],['Default route','0.0.0.0/0 → 203.0.113.2'],['Real hardware','TP-Link TL-ER6120 (hardware list)']]});
+reg('Core-Switch',coreG,{title:'Core-Switch',type:'Layer 3 core · inter-VLAN routing',vlan:40,rows:[
+ ['Model','Cisco 3560 multilayer'],['L3','ip routing · hardware (ASIC) inter-VLAN routing'],['SVIs','Vlan10 .10.1 · Vlan20 .20.1 · Vlan30 .30.1 · Vlan40 .40.1'],['DHCP relay','ip helper-address 192.168.40.5 on SVI 10/20/30'],['Fa0/24','Trunk → HW-Lab-SW · allowed 10,40'],['Gi0/1','Trunk → NDICT-SW1 · allowed 20,40'],['Gi0/2','Trunk → GFX-SW1 · allowed 30,40'],['Fa0/2','Access VLAN 40 → Router0 Gi0/0'],['Fa0/3–8','Server, Laptop0–3, Printer3 (VLAN 40)'],['Default route','0.0.0.0/0 → 192.168.40.254']]});
+reg('Server',serverG,{title:'Server',type:'DNS + DHCP + WEB · Server-PT',vlan:40,rows:[
+ ['IP','192.168.40.5/24 (static)'],['Gateway','192.168.40.1'],['DNS','192.168.40.5 (itself)'],['Port','Core-Switch Fa0/3 · access VLAN 40'],['Pools','VLAN10/20/30/40_POOL · start .10 · 245 hosts'],['Pool gateways','.10.1 / .20.1 / .30.1 / .40.1'],['Pitfall','DHCP service is OFF by default in PT — toggle ON first']]});
+reg('Rack',rackFrame,{title:'6U Wall Rack',type:'Server rack · staff room',vlan:40,rows:[['Enclosure','CB Premium 19" wall-mounted 6U'],['Contents','Cooling fans · patch panel · Router0 · Core-Switch · cable manager · PDU'],['Cooling','Dual 24 V 120 mm fans + 24 V-2 A PSU'],['Power','3U PDU · DCP 650 VA UPS below']]});
+[patchU,pduU].forEach(u=>{rackFrame.attach(u);});
+rack.children.filter(c=>c.isMesh).forEach(m=>{m.userData.dev='Rack';pickables.push(m);});
+reg('UPS',ups,{title:'UPS',type:'DCP 650 VA',vlan:40,rows:[['Role','Backup power for rack (router + core)'],['Feeds','3U PDU in rack']]});
+reg('ISP',isp,{title:'ISP (simulated)',type:'WAN · Internet',vlan:null,rows:[['Next hop','203.0.113.2'],['Link','Router0 Gi0/1 203.0.113.1/30'],['NAT','All internal /24s translated (PAT overload)']]});
+
+/* ---------- access switches ---------- */
+function makeSwitch(name,z,vlan){const g=new THREE.Group();g.position.copy(P(6.7,1.0,z));g.rotation.y=-Math.PI/2;scene.add(g);
+ const sw=new THREE.Mesh(geo(.46,.05,.26),faceMats(swTex,0x2b3542));sw.castShadow=true;g.add(sw);
+ bx(g,.5,.02,.3,mats.alu,0,-.035,0); bx(g,.03,.12,.28,mats.alu,-.22,-.1,0); bx(g,.03,.12,.28,mats.alu,.22,-.1,0);
+ bx(g,.46,.006,.02,vlanCableTrunk[vlan],0,.028,.12,false);
+ wb(.04,.22,.3,mats.white,6.88,.55,z,scene); // wall patch panel / faceplates
+ return {name,z,vlan,g};}
+const swFront=(sw,port)=>P(6.54,1.0,sw.z-.19+(port-1)*.36/23);
+const uplinkFull={};
+const ductX={10:6.66,20:6.74,30:6.82};
+
+/* ---------- labs ---------- */
+const labs=[
+ {vlan:10,name:'Hardware Lab',start:1,rows:[{z:4.0,xs:[.7,1.6,2.5,3.4,4.3,5.2]},{z:5.6,xs:[.7,1.6,2.5,3.4,4.3,5.2]},{z:7.2,xs:[3.4,4.3,5.2]}],
+  sws:[{name:'HW-Lab-SW',z:8.3,count:15,core:'Fa0/24'}],
+  teacher:[6.2,6.3,.6,1.4], extras:[{id:'Laptop4',kind:'laptop',sw:0,port:16,x:6.2,z:6.0,rot:Math.PI/2}]},
+ {vlan:20,name:'NDICT Lab',start:16,rows:[11.0,12.4,13.8,15.2,16.6].map(z=>({z,xs:[.8,1.65,2.5,3.6,4.4,5.2,6.0]})),
+  sws:[{name:'NDICT-SW1',z:9.85,count:18,core:'Gi0/1'},{name:'NDICT-SW2',z:10.55,count:17}],
+  teacher:[3.4,9.85,1.6,.6], extras:[{id:'Laptop5',kind:'laptop',sw:0,port:19,x:5.25,z:17.7,table:true},{id:'Printer1',kind:'printer',sw:0,port:20,x:6.2,z:17.7}]},
+ {vlan:30,name:'Graphics Lab',start:51,rows:[20.4,22.0,23.6,25.2,26.8].map(z=>({z,xs:[.9,1.8,2.7,4.1,5.0,5.9]})),
+  sws:[{name:'GFX-SW1',z:18.95,count:15,core:'Gi0/2'},{name:'GFX-SW2',z:19.65,count:15}],
+  teacher:[3.4,19.1,1.6,.6], extras:[{id:'Laptop6',kind:'laptop',sw:0,port:16,x:5.2,z:29.4,table:true},{id:'Printer0',kind:'printer',sw:1,port:16,x:6.1,z:29.4}]}
+];
+const swDetails={
+ 'HW-Lab-SW':[['Uplink','Gi0/1 → Core Fa0/24 · trunk 10,40'],['Fa0/1–15','PC1–PC15 · access VLAN 10'],['Fa0/16–18','Laptop4 + spares'],['Fa0/19–24','shutdown (unused)'],['Port security','sticky MAC · max 1 · violation restrict (tested)']],
+ 'NDICT-SW1':[['Uplink','Gi0/1 → Core Gi0/1 · trunk 20,40'],['Downlink','Gi0/2 → NDICT-SW2 Gi0/1 · trunk 20,40'],['Fa0/1–21','PC16–PC33, Laptop5, Printer1 · VLAN 20'],['Fa0/22–24','shutdown']],
+ 'NDICT-SW2':[['Uplink','Gi0/1 → NDICT-SW1 Gi0/2 · trunk 20,40'],['Fa0/1–21','PC34–PC50 · VLAN 20'],['Fa0/22–24','shutdown']],
+ 'GFX-SW1':[['Uplink','Gi0/1 → Core Gi0/2 · trunk 30,40'],['Downlink','Gi0/2 → GFX-SW2 Gi0/1 · trunk 30,40'],['Fa0/1–16','PC51–PC65, Laptop6 · VLAN 30'],['Fa0/17–24','shutdown']],
+ 'GFX-SW2':[['Uplink','Gi0/1 → GFX-SW1 Gi0/2 · trunk 30,40'],['Fa0/1–16','PC66–PC80, Printer0 · VLAN 30'],['Fa0/17–24','shutdown']]};
+const endDevs=[];
+let coreUplinkIdx=0;
+function accessRoute(sw,port,ex,ey,ez,backZ,i){const zp=sw.z-.19+(port-1)*.36/23,xd=6.6+(i%6)*.035,yf=.022+(i%5)*.007;
+ return [swFront(sw,port),P(6.54,.93,zp),P(xd,.93,zp),P(xd,yf,zp),P(xd,yf,backZ),P(ex,yf,backZ),P(ex,ey,backZ),P(ex,ey,ez)];}
+
+labs.forEach(lab=>{
+ const v=lab.vlan;
+ const sws=lab.sws.map(s=>{const o=makeSwitch(s.name,s.z,v);Object.assign(o,s);return o;});
+ // uplink core → sw1
+ const s1=sws[0], xv=ductX[v], ox=.12-coreUplinkIdx*.06; coreUplinkIdx++;
+ const up=tube([coreFront(ox),P(5.8+ox,1.135,.64),P(xv,1.135,.64),P(xv,.065,.64),P(xv,.065,s1.z+.21),P(xv,.93,s1.z+.21),P(6.54,.93,s1.z+.21),P(6.54,1.0,s1.z+.21)],.024,vlanCableTrunk[v],cableGroups[v]);
+ uplinkFull[s1.name]=up;
+ if(sws[1]){const s2=sws[1];const link=tube([P(6.54,1.01,s1.z+.2),P(6.47,1.01,s1.z+.2),P(6.47,1.01,s2.z+.21),P(6.54,1.01,s2.z+.21)],.02,vlanCableTrunk[v],cableGroups[v]);uplinkFull[s2.name]=cat(up,link);}
+ sws.forEach((s,i)=>{
+  const parent=i===0?`Core-Switch ${s.core}`:`${sws[0].name} Gi0/2`;
+  reg(s.name,s.g,{title:s.name,type:`Access switch · ${lab.name}`,vlan:v,rows:[['Model','Cisco 2960-24TT (Layer 2)'],['VLANs','10/20/30 created locally + 40 (DHCP relay path)'],...swDetails[s.name],['Note','no "trunk encapsulation" cmd on 2960 (dot1q only)']]});
+  label(s.name,'dev',P(6.4,1.32,s.z),VL[v].css);
+ });
+ // desks + pcs
+ const pcs=[]; let n=lab.start;
+ lab.rows.forEach(r=>{r.xs.forEach(x=>pcs.push({num:n++,x,z:r.z}));
+  const groups=[];let cur=[r.xs[0]];for(let i=1;i<r.xs.length;i++){if(r.xs[i]-r.xs[i-1]>1)groups.push(cur),cur=[];cur.push(r.xs[i]);}groups.push(cur);
+  groups.forEach(gx=>{const x1=gx[0]-.4,x2=gx[gx.length-1]+.5,len=x2-x1,cx=(x1+x2)/2;wb(len,.04,.68,mats.desk,cx,.73,r.z);for(const xe of[x1+.03,x2-.03])wb(.04,.71,.6,mats.leg,xe,.355,r.z);wb(len-.08,.34,.02,mats.desk,cx,.5,r.z-.31);});
+ });
+ let k=0, ci=0;
+ sws.forEach(s=>{for(let p=1;p<=s.count;p++){const pc=pcs[k++];buildPC(pc,s,p,v,lab,ci++);}});
+ // teacher table
+ const [tx,tz,tw,td]=lab.teacher; teacherTable(tx,tz,tw,td);
+ if(v===10)makeChair(scene,P(6.2,0,6.3).x+.55,P(0,0,6.6).z,Math.PI/2*-1+Math.PI,mats.chairB);
+ else makeChair(scene,P(tx,0,0).x,P(0,0,tz).z-.6,Math.PI,mats.chairB);
+ // extras
+ lab.extras.forEach(e=>{const s=sws[e.sw];let obj,ey,sm=null;
+  if(e.kind==='laptop'){if(e.table){wb(.7,.04,.5,mats.desk,e.x,.73,e.z);for(const sx of[-1,1])wb(.04,.71,.44,mats.leg,e.x+sx*.32,.355,e.z);}const L=makeLaptop(e.x,.75,e.z,v,e.rot||0);obj=L.g;sm=L.sm;ey=.76;}
+  else {obj=makePrinter(e.x,e.z,true);ey=.6;}
+  const pts=tube(accessRoute(s,e.port,e.x,ey,e.z,e.z,ci++),.011,vlanCable[v],cableGroups[v]);
+  const d=reg(e.id,obj,{title:e.id,type:(e.kind==='laptop'?'Student laptop':'Lab printer')+' · '+lab.name,vlan:v,rows:[['VLAN',`${v} — ${VL[v].name}`],['Addressing',`DHCP · pool 192.168.${v}.10+`],['Gateway (SVI)',`192.168.${v}.1`],['Switch port',`${s.name} Fa0/${e.port}`]],toCore:cat(rev(pts),rev(uplinkFull[s.name]))});
+  if(sm)d.screens.push(sm); if(e.kind==='laptop')endDevs.push(d);
+ });
+ // room label
+ const zc=(lab.rows[0].z+lab.rows[lab.rows.length-1].z)/2;
+ label(`<b>${lab.name.toUpperCase()}</b><span>VLAN ${v} · 192.168.${v}.0/24 · ${pcs.length} PCs</span>`,'room',P(2.9,1.75,zc),VL[v].css);
+});
+
+function buildPC(pc,sw,port,v,lab,i){
+ const g=new THREE.Group();g.position.copy(P(pc.x,0,pc.z));scene.add(g);
+ bx(g,.04,.09,.04,mats.mon,0,.795,-.15);bx(g,.18,.012,.12,mats.mon,0,.756,-.15);
+ bx(g,.52,.32,.03,mats.mon,0,1.0,-.16);
+ const sm=screenMat(v);const s=new THREE.Mesh(new THREE.PlaneGeometry(.48,.28),sm);s.position.set(0,1.0,-.144);g.add(s);
+ bx(g,.17,.36,.36,mats.tower,.38,.93,-.08); bx(g,.02,.02,.004,vlanCableTrunk[v],.38,1.06,.101,false);
+ bx(g,.4,.015,.13,mats.kb,-.03,.758,.09,false); bx(g,.05,.015,.08,mats.kb,.24,.758,.1,false);
+ makeChair(g,0,.62,0);
+ const id='PC'+pc.num;
+ const pts=tube(accessRoute(sw,port,pc.x+.38,.8,pc.z-.27,pc.z-.43,i),.011,vlanCable[v],cableGroups[v]);
+ const up=sw.core?`${sw.name} Gi0/1 → Core ${sw.core}`:`${sw.name} → ${lab.sws[0].name} → Core ${lab.sws[0].core}`;
+ const d=reg(id,g,{title:id,type:`Student workstation · ${lab.name}`,vlan:v,num:pc.num,rows:[['VLAN',`${v} — ${VL[v].name}`],['Addressing',`DHCP · pool 192.168.${v}.10+ (245 hosts)`],['Gateway (SVI)',`192.168.${v}.1`],['DNS','192.168.40.5'],['Switch port',`${sw.name} Fa0/${port} · access`],['Path to core',up+' (802.1Q trunk)']],toCore:cat(rev(pts),rev(uplinkFull[sw.name]))});
+ d.screens.push(sm); endDevs.push(d);
+ label(String(pc.num),'pcn',P(pc.x,1.32,pc.z-.16),VL[v].css,pcLabels);
+}
+
+/* ---------- staff room devices ---------- */
+const staffPos=[[1.35,1.28,Math.PI],[2.15,1.28,Math.PI],[1.35,1.72,0],[2.15,1.72,0]];
+staffPos.forEach(([x,z,rot],i)=>{const L=makeLaptop(x,.75,z,40,rot);makeChair(scene,P(x,0,0).x,P(0,0,z+(rot?-.62:.62)).z,rot?Math.PI:0);
+ const yz=1.0+i*.035,xa=5.5-i*.035;
+ const pts=tube([coreFront(.02+i*.035),P(5.82+i*.035,1.135,.62),P(xa,1.135,.62)].concat([P(xa,.03,.62),P(xa,.03,yz),P(x,.03,yz),P(x,.03,z),P(x,.76,z)]),.011,vlanCable[40],cableGroups[40]);
+ const d=reg('Laptop'+i,L.g,{title:'Laptop'+i,type:'Staff laptop · Staff room',vlan:40,rows:[['VLAN','40 — Staff'],['Addressing','DHCP · pool 192.168.40.10+'],['Gateway (SVI)','192.168.40.1'],['Switch port',`Core-Switch Fa0/${4+i} · access`],['ACL','Staff may reach every VLAN']],toCore:rev(pts)});
+ d.screens.push(L.sm); endDevs.push(d);
+});
+{const pr=makePrinter(.45,.45,true);const pts=tube([coreFront(.18),P(5.98,1.135,.62),P(5.36,1.135,.62),P(5.36,.03,.62),P(5.36,.03,.24),P(.45,.03,.24),P(.45,.6,.24),P(.45,.6,.4)],.011,vlanCable[40],cableGroups[40]);
+ reg('Printer3',pr,{title:'Printer3',type:'Staff printer · Staff room',vlan:40,rows:[['VLAN','40 — Staff'],['Switch port','Core-Switch Fa0/8 · access']],toCore:rev(pts)});}
+label('<b>STAFF ROOM</b><span>VLAN 40 · 192.168.40.0/24</span>','room',P(1.75,1.75,1.4),VL[40].css);
+label('Router0 · .40.254','dev',P(5.1,1.62,.45),VL[40].css);
+label('Core-Switch · L3','dev',P(6.45,1.58,.6),'#ffd166');
+label('Server · 192.168.40.5','dev',P(4.3,.85,.95),VL[40].css);
+label('ISP · 203.0.113.2','dev',P(5.9,2.62,-.72),'#f59e0b');
+
+/* ---------- VLAN legend ---------- */
+const vEl=document.getElementById('vlans');
+[[10,'VLAN 10 · Hardware Lab','15 PCs + Laptop4'],[20,'VLAN 20 · NDICT Lab','35 PCs + Laptop5, Printer1'],[30,'VLAN 30 · Graphics Lab','30 PCs + Laptop6, Printer0'],[40,'VLAN 40 · Staff / Server','Server, Router, 4 laptops, Printer3'],['wan','WAN · NAT to ISP','203.0.113.1/30']].forEach(([v,t,s])=>{
+ const r=document.createElement('div');r.className='row';const col=v==='wan'?'#f59e0b':VL[v].css;
+ r.innerHTML=`<span class="vl"><span class="dot" style="background:${col}"></span><span>${t}<br><span class="mono">${s}</span></span></span><label class="sw"><input type="checkbox" checked><span></span></label>`;
+ r.querySelector('input').onchange=e=>{cableGroups[v].visible=e.target.checked;};vEl.appendChild(r);});
+{const r=document.createElement('div');r.className='mono';r.style.marginTop='4px';r.textContent='Thick lines = 802.1Q trunks · thin = access ports';vEl.appendChild(r);}
+
+/* ---------- picking ---------- */
+const ray=new THREE.Raycaster(); const mouse=new THREE.Vector2();
+const hoverBox=new THREE.BoxHelper(undefined,0xffd166); hoverBox.visible=false; scene.add(hoverBox);
+const selBox=new THREE.BoxHelper(undefined,0xffffff); selBox.visible=false; scene.add(selBox);
+const tip=document.getElementById('tip');
+let hoverId=null, pendingMove=null, selected=null;
+function pick(ev){const r=renderer.domElement.getBoundingClientRect();mouse.set(((ev.clientX-r.left)/r.width)*2-1,-((ev.clientY-r.top)/r.height)*2+1);ray.setFromCamera(mouse,camera);const hit=ray.intersectObjects(pickables,false)[0];return hit?hit.object.userData.dev:null;}
+renderer.domElement.addEventListener('pointermove',e=>{pendingMove=e;});
+let downPos=null;
+renderer.domElement.addEventListener('pointerdown',e=>{downPos=[e.clientX,e.clientY];});
+renderer.domElement.addEventListener('pointerup',e=>{if(!downPos)return;const moved=Math.hypot(e.clientX-downPos[0],e.clientY-downPos[1]);downPos=null;if(moved>5)return;const id=pick(e);if(id)select(id);});
+const focusables=[];
+scene.traverse(o=>{if(o.isMesh&&o.material!==glassMat&&o.material!==lidGlass&&!o.material.transparent)focusables.push(o);});
+renderer.domElement.addEventListener('dblclick',e=>{const r=renderer.domElement.getBoundingClientRect();mouse.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);ray.setFromCamera(mouse,camera);
+ const hit=ray.intersectObjects(focusables.filter(m=>{let o=m;while(o){if(!o.visible)return false;o=o.parent;}return true;}),false)[0];if(!hit)return;
+ const tgt=hit.point.clone();const dir=camera.position.clone().sub(tgt).normalize();const dist=Math.max(1.6,Math.min(camera.position.distanceTo(tgt)*.4,5));
+ if(dir.y<.35){dir.y=.35;dir.normalize();}
+ flyTo(tgt.clone().add(dir.multiplyScalar(dist)),tgt,1.1);});
+function processHover(){if(!pendingMove)return;const e=pendingMove;pendingMove=null;const id=pick(e);const r=stage.getBoundingClientRect();
+ if(id){tip.style.display='block';tip.style.left=(e.clientX-r.left)+'px';tip.style.top=(e.clientY-r.top)+'px';tip.textContent=DEV[id].title+' — '+DEV[id].type;renderer.domElement.style.cursor='pointer';}
+ else{tip.style.display='none';renderer.domElement.style.cursor='';}
+ if(id!==hoverId){hoverId=id;if(id){hoverBox.setFromObject(DEV[id].obj);hoverBox.visible=true;}else hoverBox.visible=false;}}
+const infoEl=document.getElementById('info');
+function devCenter(d){return new THREE.Box3().setFromObject(d.obj).getCenter(new THREE.Vector3());}
+function select(id){const d=DEV[id];selected=id;selBox.setFromObject(d.obj);selBox.visible=true;
+ const col=d.vlan?VL[d.vlan].css:'#f59e0b';
+ infoEl.innerHTML=`<div class="t"><span class="dot" style="background:${col}"></span>${d.title}</div><div class="ty">${d.type}</div><table>${d.rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table><div class="acts"><button class="btn" id="bFly">Fly to</button>${d.toCore?'<button class="btn" id="bPing">Send DHCP request</button>':''}</div>`;
+ document.getElementById('bFly').onclick=()=>{const c=devCenter(d);flyTo(c.clone().add(new THREE.Vector3(2.6,2.4,3.2)),c);};
+ const bp=document.getElementById('bPing');if(bp)bp.onclick=()=>spawnDHCP(d,true);}
+
+/* ---------- camera ---------- */
+let fly=null;
+function flyTo(pos,tgt,dur=1.5){fly={p0:camera.position.clone(),t0:controls.target.clone(),p1:pos,t1:tgt,t:0,dur};}
+controls.addEventListener('start',()=>{fly=null;});
+const views={
+ overview:[new THREE.Vector3(14,14.5,18.5),new THREE.Vector3(0,0,-.5)],
+ top:[new THREE.Vector3(0,50,3.5),new THREE.Vector3(0,0,0)],
+ rack:[new THREE.Vector3(-.3,2.6,-11.4),P(5.3,1.0,.5)],
+ staff:[P(3.0,3.1,4.4),P(1.6,.55,1.3)],
+ hw:[new THREE.Vector3(9,8.5,-2.5),new THREE.Vector3(0,.4,-9.1)],
+ ndict:[new THREE.Vector3(10,9.5,6.5),new THREE.Vector3(0,.4,-1.4)],
+ gfx:[new THREE.Vector3(11,11,19.5),new THREE.Vector3(0,.4,9.2)]};
+function goView(v){const [p,t]=views[v];flyTo(p.clone(),t.clone());document.querySelectorAll('[data-v]').forEach(x=>x.classList.toggle('on',x.dataset.v===v));}
+document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>goView(b.dataset.v));
+controls.addEventListener('start',()=>document.querySelectorAll('[data-v]').forEach(x=>x.classList.remove('on')));
+document.querySelectorAll('#vbar [data-t]').forEach(b=>{const cb=document.getElementById(b.dataset.t);const sync=()=>b.classList.toggle('on',cb.checked);sync();cb.addEventListener('change',sync);b.onclick=()=>{cb.checked=!cb.checked;cb.dispatchEvent(new Event('change'));};});
+
+/* ---------- toggles ---------- */
+let lidTarget=1,lidT=0;
+document.getElementById('tLid').onchange=e=>lidTarget=e.target.checked?1:0;
+document.getElementById('tCase').onchange=e=>{caseG.visible=e.target.checked;lid.visible=e.target.checked&&lidT<.99;};
+document.getElementById('tWalls').onchange=e=>wallsG.visible=e.target.checked;
+document.getElementById('tLabels').onchange=e=>allLabels.forEach(l=>l.visible=e.target.checked);
+document.getElementById('tPcn').onchange=e=>pcLabels.forEach(l=>l.visible=e.target.checked);
+pcLabels.forEach(l=>l.visible=false);
+document.getElementById('tLog').onchange=e=>document.body.classList.toggle('showlog',e.target.checked);
+const pbtn=document.getElementById('pbtn');pbtn.onclick=()=>{const f=document.body.classList.toggle('full');pbtn.textContent=f?'⟨ Show panel':'Hide panel ⟩';resize();};
+document.getElementById('tRot').onchange=e=>controls.autoRotate=e.target.checked;
+let mode='mixed';
+document.querySelectorAll('#modes .btn').forEach(b=>b.onclick=()=>{mode=b.dataset.m;document.querySelectorAll('#modes .btn').forEach(x=>x.classList.toggle('on',x===b));});
+const aclEl=document.getElementById('acl');
+
+/* ---------- packets ---------- */
+const glowTex=canvasTex(64,64,(g)=>{const r=g.createRadialGradient(32,32,0,32,32,32);r.addColorStop(0,'rgba(255,255,255,1)');r.addColorStop(.35,'rgba(255,255,255,.45)');r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,64,64);});
+const pktGeo=new THREE.SphereGeometry(.065,12,10);
+const packets=[], bursts=[];
+function pktMesh(color){const g=new THREE.Group();const s=new THREE.Mesh(pktGeo,new THREE.MeshBasicMaterial({color}));const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));sp.scale.set(.5,.5,1);g.add(s,sp);scene.add(g);return g;}
+function setPktColor(g,c){g.children.forEach(m=>m.material.color.set(c));}
+function poly(pts){const L=[0];for(let i=1;i<pts.length;i++)L.push(L[i-1]+pts[i].distanceTo(pts[i-1]));return{pts,L,total:L[L.length-1]};}
+function sampleAt(pl,d,out){if(d>=pl.total)return out.copy(pl.pts[pl.pts.length-1]);let i=1;while(pl.L[i]<d)i++;const t=(d-pl.L[i-1])/(pl.L[i]-pl.L[i-1]||1);return out.lerpVectors(pl.pts[i-1],pl.pts[i],t);}
+function launch(legs){if(packets.length>60)return;const p={legs,leg:0,d:0,pl:poly(legs[0].pts),mesh:pktMesh(legs[0].color)};p.mesh.position.copy(legs[0].pts[0]);packets.push(p);}
+function burst(pos,color,scale=1.4){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));sp.position.copy(pos);scene.add(sp);bursts.push({sp,t:0,scale});}
+const coreGlowPos=coreFront(0,0).add(new THREE.Vector3(0,0,.03));
+const counters={D:0,R:0,N:0,X:0};
+function bump(k){counters[k]++;document.getElementById('c'+k).textContent=counters[k];}
+const logEl=document.getElementById('log');
+function log(html,col){const d=document.createElement('div');d.innerHTML=html;d.style.borderLeftColor=col;logEl.appendChild(d);while(logEl.children.length>6)logEl.firstChild.remove();}
+const ipOf=d=>{if(d.num){const lab=labs.find(l=>l.vlan===d.vlan);return `192.168.${d.vlan}.${10+d.num-lab.start}`;}const m=d.id.match(/\d+/);return `192.168.${d.vlan}.${d.vlan===40?30+(+m[0]):60+(+m[0])}`;};
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const flashes=new Map();
+function flash(d){d.screens.forEach(s=>flashes.set(s,1));}
+function spawnDHCP(a,manual){const c=VL[a.vlan].c;
+ launch([{pts:cat(a.toCore,coreToServer),color:c,onEnd:()=>{burst(coreToServer[coreToServer.length-1],0x38bdf8,1);}},
+  {pts:rev(cat(a.toCore,coreToServer)),color:0xffffff,onEnd:()=>{flash(a);bump('D');log(`${a.title} ⇢ DHCP Discover → SVI 192.168.${a.vlan}.1 relay → 192.168.40.5 ⇢ Offer <b>${ipOf(a)}</b>`,VL[a.vlan].css);}}]);
+ if(manual)log(`${a.title}: DHCP Discover sent (broadcast, relayed by ip helper-address)`,VL[a.vlan].css);}
+function spawnInter(){const a=rnd(endDevs);const b=rnd(endDevs.filter(x=>x.vlan!==a.vlan));const c=VL[a.vlan].c;
+ launch([{pts:a.toCore,color:c,onEnd:p=>{burst(coreGlowPos,c,1.1);
+   if(aclEl.checked&&a.vlan!==40&&b.vlan!==40){burst(coreGlowPos,0xff2d2d,2.4);bump('X');log(`✕ ${a.title} (${ipOf(a)}) → ${b.title} (${ipOf(b)}) <b>denied by ACL</b> VLAN ${a.vlan}→${b.vlan}`,'#f87171');return false;}}},
+  {pts:rev(b.toCore),color:c,onEnd:()=>{flash(b);bump('R');log(`${a.title} ${ipOf(a)} → ${b.title} ${ipOf(b)} routed SVI ${a.vlan}→${b.vlan} inside Core-Switch`,VL[a.vlan].css);}}]);}
+function spawnNet(){const a=rnd(endDevs);const c=VL[a.vlan].c;const out=cat(a.toCore,coreToRouter,routerToISP);
+ launch([{pts:out,color:c,onEnd:()=>burst(routerToISP[routerToISP.length-1],0xf59e0b,1.6)},{pts:rev(out),color:0xf59e0b,onEnd:()=>{flash(a);bump('N');log(`${a.title} ${ipOf(a)} → PAT 203.0.113.1 → Internet ✓`,'#f59e0b');}}]);}
+let spawnT=0;
+function spawnTick(dt){if(mode==='off')return;spawnT-=dt;if(spawnT>0)return;spawnT=.32+Math.random()*.25;
+ const m=mode==='mixed'?(Math.random()<.35?'dhcp':Math.random()<.6?'inter':'internet'):mode;
+ if(m==='dhcp')spawnDHCP(rnd(endDevs));else if(m==='inter')spawnInter();else spawnNet();}
+
+/* ---------- loop ---------- */
+const clock=new THREE.Clock(); let intro=0;
+flyTo(views.overview[0].clone(),views.overview[1].clone(),3.2);
+const tmp=new THREE.Vector3();
+document.getElementById('loading').remove();
+function tick(){
+ const dt=Math.min(clock.getDelta(),.05); intro+=dt;
+ if(fly){fly.t+=dt;const k=Math.min(1,fly.t/fly.dur);const e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;camera.position.lerpVectors(fly.p0,fly.p1,e);controls.target.lerpVectors(fly.t0,fly.t1,e);if(k>=1)fly=null;}
+ // lid
+ const lt=intro<1.2?0:lidTarget; lidT+= (lt-lidT)*Math.min(1,dt*2.2);
+ lid.position.y=lidT*2.2; lid.position.x=lidT*.4; lid.rotation.z=-lidT*.06;
+ lidGlass.opacity=.12*(1-lidT); lidFrame.opacity=1-lidT; lid.visible=caseG.visible&&lidT<.985;
+ // packets
+ if(intro>2)spawnTick(dt);
+ for(let i=packets.length-1;i>=0;i--){const p=packets[i];p.d+=9*dt;
+  if(p.d>=p.pl.total){const r=p.legs[p.leg].onEnd?.(p);p.leg++;
+   if(r===false||p.leg>=p.legs.length){scene.remove(p.mesh);packets.splice(i,1);continue;}
+   p.pl=poly(p.legs[p.leg].pts);p.d=0;setPktColor(p.mesh,p.legs[p.leg].color);}
+  sampleAt(p.pl,p.d,p.mesh.position);}
+ for(let i=bursts.length-1;i>=0;i--){const b=bursts[i];b.t+=dt*2;const s=.3+b.t*b.scale;b.sp.scale.set(s,s,1);b.sp.material.opacity=Math.max(0,1-b.t);if(b.t>=1){scene.remove(b.sp);bursts.splice(i,1);}}
+ for(const [m,v] of flashes){const nv=v-dt*1.6;m.emissiveIntensity=.55+Math.max(0,nv)*2.2;if(nv<=0){flashes.delete(m);m.emissiveIntensity=.55;}}
+ processHover();
+ if(selected)selBox.setFromObject(DEV[selected].obj);
+ controls.update(); renderer.render(scene,camera); labelR.render(scene,camera);
+ requestAnimationFrame(tick);
+}
+window.__lab={packets,counters,get intro(){return intro}};
+tick();
+</script>
+</body>
+</html>

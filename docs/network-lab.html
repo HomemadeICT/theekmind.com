@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Network Lab 80: 3D Lab in a Box | TheekMind</title>
+<meta name="description" content="Interactive 3D model of an 80-workstation campus lab network: VLANs, Layer 3 core switching, DHCP relay, NAT and live packet animation.">
+<link rel="canonical" href="https://theekmind.com/network-lab.html">
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="96x96" href="assets/favicon-96.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TheekMind">
+<meta property="og:title" content="Network Lab 80: 3D Lab in a Box | TheekMind">
+<meta property="og:description" content="Interactive 3D model of an 80-workstation campus lab network: VLANs, Layer 3 core switching, DHCP relay, NAT and live packet animation.">
+<meta property="og:url" content="https://theekmind.com/network-lab.html">
+<meta property="og:image" content="https://theekmind.com/assets/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0F2D5B">
+<script>document.documentElement.classList.add('js');try{var t=localStorage.getItem('tm-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap bar">
+    <a class="brand" href="index.html"><img src="assets/logo-badge.png" alt="" width="40" height="40">TheekMind</a>
+    <nav class="nav" id="nav" aria-label="Main"><a href="projects.html" aria-current="page">Projects</a><a href="about.html">About</a><a href="https://blogs.theekmind.com">Blog</a><a class="only-small cta-link" href="contact.html">Contact</a></nav>
+    <div class="actions">
+      <a class="pill" href="contact.html">Contact</a>
+      <button class="switch" id="theme" type="button" role="switch" aria-checked="false" aria-label="Dark mode">
+        <svg class="ico sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="ico moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <span class="knob"></span>
+      </button>
+      <button class="menu-btn" id="menu" type="button" aria-label="Menu" aria-controls="nav" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    </div>
+  </div>
+</header>
+<main id="main">
+<div class="wrap"><p class="crumbs"><a href="projects.html">&larr; All projects</a></p>
+<div class="cs-hero"><span class="eyebrow">Case study</span><h1>Network Lab 80: 3D Lab in a Box</h1><p class="lead">An interactive 3D model of an 80-workstation campus lab network, designed in Cisco Packet Tracer: VLANs, a Layer 3 core, DHCP relay, NAT and live traffic.</p><ul class="roles"><li>Three.js</li><li>Cisco Packet Tracer</li><li>VLAN</li><li>NAT/PAT</li></ul>
+<div class="btns"><a class="btn primary lg" href="network-lab-80/">Launch the 3D lab</a><a class="btn lg" href="https://github.com/HomemadeICT/LAN-Proposal-Project">View the code</a></div></div>
+<ul class="facts"><li><b>Role</b>Network designer</li><li><b>Context</b>NDICT (NVQ Level 5) final proposal</li><li><b>Scale</b>80 PCs, 7 laptops, 3 printers, 4 VLANs</li><li><b>Tools</b>Cisco Packet Tracer, Three.js</li></ul></div><section class="block reveal"><div class="wrap"><div class="section-head"><h2>The 3D lab</h2></div><div class="frame"><div class="bar"><i></i><i></i><i></i></div><img src="assets/shots/lab80-overview.jpg" alt="3D overview of the lab: four rooms, VLAN-coloured PCs and the cabling" width="1600" height="900" loading="lazy"></div>
+<p class="small" style="margin-top:10px">A screenshot of the interactive model. <a href="network-lab-80/">Launch it</a> to orbit, zoom and click devices (best on a laptop).</p></div></section><section class="block reveal alt"><div class="wrap"><div class="section-head"><h2>What this is</h2></div><div class="prose"><p>The network is my NVQ final proposal for an IT institute with three computer labs and a staff room: 80 PCs, 7 laptops and 3 printers on four VLANs, routed by a Layer 3 core switch, with one server for DHCP, DNS and web, and a router doing NAT/PAT to the internet.</p>
+<p>I designed and tested it in Cisco Packet Tracer, then turned it into an interactive 3D model so anyone can explore it without installing anything.</p></div></div></section><section class="block reveal"><div class="wrap"><div class="section-head"><h2>What you can do in the model</h2></div><div class="grid cols-3">
+<div class="card"><h3>Fly around</h3><p>Orbit, pan and zoom, or jump to preset views: overview, staff room, server rack, each lab and the floor plan.</p></div>
+<div class="card"><h3>Click any device</h3><p>Select a PC, switch, the router, the core switch or the server to see its configuration from the project.</p></div>
+<div class="card"><h3>Watch traffic</h3><p>Run a live simulation of DHCP, inter-VLAN routing and internet (NAT) traffic, with counters for each.</p></div>
+<div class="card"><h3>Peel the layers</h3><p>Toggle the glass case, walls, labels, PC numbers and each VLAN's cabling.</p></div>
+<div class="card"><h3>Preview the ACLs</h3><p>Switch on the planned lab-isolation policy and see which flows would be dropped.</p></div>
+<div class="card"><h3>Read the design</h3><p>IP plan, security matrix, hardware list and the configuration order are in the side panel.</p></div></div><div style="height:28px"></div><div class="gallery"><figure><img src="assets/shots/lab80-staff-server.jpg" alt="Staff room and server room" width="1600" height="900" loading="lazy"><figcaption>The staff room and server room: router, core switch, server and the ISP link.</figcaption></figure><figure><img src="assets/shots/lab80-hardware.jpg" alt="Hardware lab and NDICT lab" width="1600" height="900" loading="lazy"><figcaption>The hardware lab (VLAN 10) with its access switch, and the NDICT lab beside it.</figcaption></figure></div></div></section><section class="block reveal alt"><div class="wrap"><div class="section-head"><h2>Addressing plan</h2></div><div class="tablewrap"><table><thead><tr><th>VLAN</th><th>Lab</th><th>Subnet</th><th>Gateway (SVI)</th><th>PCs</th></tr></thead><tbody><tr><td>10</td><td>Hardware</td><td>192.168.10.0/24</td><td>192.168.10.1</td><td>15 + laptop</td></tr><tr><td>20</td><td>NDICT</td><td>192.168.20.0/24</td><td>192.168.20.1</td><td>35 + laptop, printer</td></tr><tr><td>30</td><td>Graphics</td><td>192.168.30.0/24</td><td>192.168.30.1</td><td>30 + laptop, printer</td></tr><tr><td>40</td><td>Staff and servers</td><td>192.168.40.0/24</td><td>192.168.40.1</td><td>server .5, router LAN .254</td></tr></tbody></table></div><div class="prose"><p>DHCP pools start at .10 (245 hosts per VLAN) and a relay (<code>ip helper-address</code>) on the core switch forwards requests to the server. The router's WAN side is 203.0.113.1/30.</p></div></div></section><section class="block reveal"><div class="wrap"><div class="section-head"><h2>Security policy</h2></div><div class="prose"><p>Each lab is isolated from the others and every lab can reach the staff and server VLAN. The ACLs are documented as a planned step (the 3D model lets you preview their effect), and port security (sticky MAC, restrict) is tested on the hardware lab switch.</p></div><div class="tablewrap"><table><thead><tr><th>From \ To</th><th>HW (10)</th><th>NDICT (20)</th><th>GFX (30)</th><th>Staff/Net (40)</th></tr></thead><tbody><tr><td>HW (10)</td><td>n/a</td><td>deny</td><td>deny</td><td>permit</td></tr><tr><td>NDICT (20)</td><td>deny</td><td>n/a</td><td>deny</td><td>permit</td></tr><tr><td>GFX (30)</td><td>deny</td><td>deny</td><td>n/a</td><td>permit</td></tr><tr><td>Staff (40)</td><td>permit</td><td>permit</td><td>permit</td><td>permit</td></tr></tbody></table></div></div></section><section class="block reveal alt"><div class="wrap"><div class="section-head"><h2>Physical design</h2></div><div class="prose"><ul><li><strong>Building:</strong> 7 m wide. Staff and server room 2.8 m, hardware lab 6 m, NDICT lab 8.8 m, graphics lab 11.8 m, with 30 cm walls between labs.</li>
+<li><strong>Distributed access switches</strong> per lab keep every Cat6 run well under 100 m, with one trunk uplink per lab along the wall.</li>
+<li><strong>Hardware list:</strong> TP-Link TL-ER6120 dual-WAN VPN router; TL-SG3428 24-port and TL-SG2218 16-port managed switches; 6U wall rack with cooling fans, PDU and a 650 VA UPS; Cat6 cable, keystone jacks, faceplates and trunking.</li></ul></div></div></section><section class="block reveal"><div class="wrap"><div class="section-head"><h2>Configuration order</h2></div><div class="prose"><ol><li>DHCP server pools</li><li>Core switch: <code>ip routing</code>, SVIs, relay, trunks</li><li>Access switches</li><li>End devices (DHCP)</li><li>Router WAN and NAT/PAT</li><li>ACLs</li><li>SSH</li><li>Port security rollout</li><li>End-to-end verification</li></ol></div></div></section><section class="block reveal alt"><div class="wrap"><div class="section-head"><h2>How the viewer is built</h2></div><div class="prose"><p>The whole model is one HTML file that uses <a href="https://threejs.org">Three.js</a> (loaded from a CDN) for the 3D scene, with no build step and no backend. It runs entirely in your browser.</p>
+<p><a href="https://github.com/HomemadeICT/networking-packet-tracer-labs">Packet Tracer labs on GitHub</a> &middot; <a href="https://github.com/HomemadeICT/LAN-Proposal-Project">80-workstation proposal on GitHub</a></p></div></div></section><div class="wrap"><div class="cta reveal"><h2>Let's work together</h2><p>I'm looking for a junior software, web or DevOps role in Sri Lanka or remote. The fastest way to reach me is email.</p><div class="btns"><a class="btn primary lg" href="mailto:homemadeict@gmail.com">Email me</a><a class="btn lg" href="https://www.linkedin.com/in/theekshana-prabodha/">LinkedIn</a></div></div></div><div class="wrap"><div class="next"><a href="projects.html">&larr; All projects</a><a href="timer.html">Toastmasters Timer &rarr;</a></div></div>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div><strong>TheekMind</strong><p>Build the skills. Create the future.</p><p>Theekshana Prabodha, ICT learner and builder from Sri Lanka.</p></div>
+    <div><h3>Explore</h3><a href="projects.html">Projects</a><a href="about.html">About</a><a href="https://blogs.theekmind.com">Blog</a><a href="contact.html">Contact</a></div>
+    <div><h3>Elsewhere</h3><a href="https://github.com/HomemadeICT">GitHub</a><a href="https://www.linkedin.com/in/theekshana-prabodha/">LinkedIn</a><a href="https://tmtimer.theekmind.com">Toastmasters Timer</a><a href="mailto:homemadeict@gmail.com">homemadeict@gmail.com</a></div>
+    <div class="legal">&copy; 2026 Theekshana Prabodha. Toastmasters International names and logos belong to Toastmasters International.</div>
+  </div>
+</footer>
+<script src="site.js" defer></script>
+</body>
+</html>

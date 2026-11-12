@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Toastmasters Timer | TheekMind</title>
+<meta name="description" content="A web app for live Toastmasters meeting timing: colour cards, speaker roster and A4 reports.">
+<link rel="canonical" href="https://theekmind.com/timer.html">
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="96x96" href="assets/favicon-96.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TheekMind">
+<meta property="og:title" content="Toastmasters Timer | TheekMind">
+<meta property="og:description" content="A web app for live Toastmasters meeting timing: colour cards, speaker roster and A4 reports.">
+<meta property="og:url" content="https://theekmind.com/timer.html">
+<meta property="og:image" content="https://theekmind.com/assets/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0F2D5B">
+<script>document.documentElement.classList.add('js');try{var t=localStorage.getItem('tm-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap bar">
+    <a class="brand" href="index.html"><img src="assets/logo-badge.png" alt="" width="40" height="40">TheekMind</a>
+    <nav class="nav" id="nav" aria-label="Main"><a href="projects.html" aria-current="page">Projects</a><a href="about.html">About</a><a href="https://blogs.theekmind.com">Blog</a><a class="only-small cta-link" href="contact.html">Contact</a></nav>
+    <div class="actions">
+      <a class="pill" href="contact.html">Contact</a>
+      <button class="switch" id="theme" type="button" role="switch" aria-checked="false" aria-label="Dark mode">
+        <svg class="ico sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="ico moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <span class="knob"></span>
+      </button>
+      <button class="menu-btn" id="menu" type="button" aria-label="Menu" aria-controls="nav" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    </div>
+  </div>
+</header>
+<main id="main">
+<div class="wrap"><p class="crumbs"><a href="projects.html">&larr; All projects</a></p>
+<div class="cs-hero"><span class="eyebrow">Case study</span><h1>Toastmasters Timer</h1><p class="lead">A web app that lets the club Timer run live meeting timing, manage the speaker roster and print the report, all from a browser on a projector screen.</p><ul class="roles"><li>PHP</li><li>MySQL</li><li>Docker</li><li>GitHub Actions</li></ul>
+<div class="btns"><a class="btn primary lg" href="https://tmtimer.theekmind.com">Open the app</a><a class="btn lg" href="https://github.com/HomemadeICT/toastmasters-timer">View the code</a></div></div>
+<ul class="facts"><li><b>Role</b>Designer and developer</li><li><b>Used for</b>Voice Your Dream Toastmasters Club meetings</li><li><b>Stack</b>PHP 8.2, MySQL, Docker</li><li><b>Hosting</b>Shared hosting via GitHub Actions FTP</li></ul></div><section class="block reveal"><div class="wrap"><div class="section-head"><h2>The problem</h2></div><div class="prose"><p>Toastmasters meetings are time-sensitive. Agendas change at the last minute, speakers swap places, and the Timer has to signal the whole room without losing focus. Paper sheets invite errors, and a generic stopwatch knows nothing about roles or thresholds.</p>
+<p>I built this to fix three things: a flexible roster, colour signals everyone can see, and an automatic report.</p></div></div></section><section class="block reveal alt"><div class="wrap"><div class="section-head"><h2>How it works</h2></div><div class="gallery"><figure><img src="assets/timer/timer-green.png" alt="Full-screen green timer card" width="1200" height="649" loading="lazy"><figcaption>The whole tab turns green, yellow or red at each role's thresholds, readable from across the room.</figcaption></figure><figure><img src="assets/timer/timer-yellow.png" alt="Full-screen yellow timer card" width="1200" height="649" loading="lazy"><figcaption>Yellow: the speaker should be wrapping up.</figcaption></figure><figure><img src="assets/timer/timer-red.png" alt="Full-screen red timer card" width="1200" height="649" loading="lazy"><figcaption>Red: time is up.</figcaption></figure></div><div class="grid cols-3" style="margin-top:28px"><div class="card"><h3>Colour cards</h3><p>Role-specific thresholds drive a full-screen card everyone in the room can read.</p></div><div class="card"><h3>Flexible roster</h3><p>Type a sequence number to move anyone; conflicts resolve automatically. Edit names, roles and times inline.</p></div><div class="card"><h3>Round Robin</h3><p>A 20-second limit with a single clean red cue and no early alerts.</p></div><div class="card"><h3>A4 report</h3><p>One click gives a print-ready report with out-of-time highlighting.</p></div><div class="card"><h3>Custom roles</h3><p>Save your own event types, such as a Q&amp;A session, with their own thresholds.</p></div><div class="card"><h3>Accounts and limits</h3><p>Each user sees only their own meetings. Retention limits and export-before-delete keep free hosting tidy.</p></div></div></div></section><section class="block reveal"><div class="wrap"><div class="section-head"><h2>Setting up a meeting</h2></div><div class="gallery"><figure><img src="assets/timer/meetings.png" alt="Create a meeting" width="1200" height="649" loading="lazy"><figcaption>Create a meeting.</figcaption></figure><figure><img src="assets/timer/roster.png" alt="Speaker roster" width="1200" height="649" loading="lazy"><figcaption>Build and reorder the roster.</figcaption></figure></div></div></section><section class="block reveal alt"><div class="wrap"><div class="section-head"><h2>Timing rules</h2></div><div class="tablewrap"><table><thead><tr><th>Role</th><th>Green</th><th>Yellow</th><th>Red</th></tr></thead><tbody><tr><td>Prepared Speech</td><td>5:00</td><td>6:00</td><td>7:00</td></tr><tr><td>Ice Breaker Speech</td><td>4:00</td><td>5:00</td><td>6:00</td></tr><tr><td>Table Topic</td><td>1:00</td><td>1:30</td><td>2:00</td></tr><tr><td>Evaluator</td><td>2:00</td><td>2:30</td><td>3:00</td></tr><tr><td>Round Robin</td><td>n/a</td><td>n/a</td><td>0:20</td></tr><tr><td>Custom</td><td>configurable</td><td>configurable</td><td>configurable</td></tr></tbody></table></div></div></section><section class="block reveal"><div class="wrap"><div class="section-head"><h2>The report</h2></div><div style="max-width:560px"><figure><img src="assets/timer/report.png" alt="Print-ready A4 timer report" width="700" height="1195" loading="lazy"><figcaption>The A4 report, ready to print or save as PDF.</figcaption></figure></div></div></section><section class="block reveal alt"><div class="wrap"><div class="section-head"><h2>Under the hood</h2></div><div class="prose"><ul><li>Plain PHP, JavaScript and CSS, with no framework to maintain.</li>
+<li>The stopwatch runs in the browser, so timing does not depend on the network.</li>
+<li>Thresholds come from role definitions stored in the database.</li>
+<li>Docker Compose for a one-command local setup; deployed to shared hosting by a GitHub Actions FTP job.</li>
+<li>Hardened for shared hosting: blocked source folders, HTTPS redirect, per-account data.</li></ul>
+<p class="small">Screenshots show sample data and the Toastmasters International logo, which belongs to Toastmasters International.</p></div></div></section><div class="wrap"><div class="cta reveal"><h2>Let's work together</h2><p>I'm looking for a junior software, web or DevOps role in Sri Lanka or remote. The fastest way to reach me is email.</p><div class="btns"><a class="btn primary lg" href="mailto:homemadeict@gmail.com">Email me</a><a class="btn lg" href="https://www.linkedin.com/in/theekshana-prabodha/">LinkedIn</a></div></div></div><div class="wrap"><div class="next"><a href="projects.html">&larr; All projects</a><a href="petty-cash.html">Petty Cash Management System &rarr;</a></div></div>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div><strong>TheekMind</strong><p>Build the skills. Create the future.</p><p>Theekshana Prabodha, ICT learner and builder from Sri Lanka.</p></div>
+    <div><h3>Explore</h3><a href="projects.html">Projects</a><a href="about.html">About</a><a href="https://blogs.theekmind.com">Blog</a><a href="contact.html">Contact</a></div>
+    <div><h3>Elsewhere</h3><a href="https://github.com/HomemadeICT">GitHub</a><a href="https://www.linkedin.com/in/theekshana-prabodha/">LinkedIn</a><a href="https://tmtimer.theekmind.com">Toastmasters Timer</a><a href="mailto:homemadeict@gmail.com">homemadeict@gmail.com</a></div>
+    <div class="legal">&copy; 2026 Theekshana Prabodha. Toastmasters International names and logos belong to Toastmasters International.</div>
+  </div>
+</footer>
+<script src="site.js" defer></script>
+</body>
+</html>
