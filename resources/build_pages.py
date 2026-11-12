@@ -93,7 +93,10 @@ def page(fname, title, desc, body, nav=None, jsonld=None, root=""):
 <meta name="description" content="{escape(desc)}">
 <link rel="canonical" href="{url}">
 <link rel="icon" href="{root}assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="{root}assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="{root}assets/favicon-16.png">
 <link rel="icon" type="image/png" sizes="96x96" href="{root}assets/favicon-96.png">
+<link rel="manifest" href="{root}site.webmanifest">
 <link rel="apple-touch-icon" href="{root}assets/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="TheekMind">
@@ -114,7 +117,7 @@ def page(fname, title, desc, body, nav=None, jsonld=None, root=""):
 <a class="skip" href="#main">Skip to content</a>
 <header class="site-header">
   <div class="wrap bar">
-    <a class="brand" href="{root or "index.html"}"><img src="{root}assets/logo-badge.png" alt="" width="40" height="40">TheekMind</a>
+    <a class="brand" href="{root or "index.html"}"><img src="{root}assets/logo-80.png" alt="" width="40" height="40">TheekMind</a>
     <nav class="nav" id="nav" aria-label="Main">{links}<a class="only-small cta-link" href="{root}contact.html">Contact</a></nav>
     <div class="actions">
       {contact}
@@ -505,9 +508,11 @@ def not_found():
 
 
 def sitemap():
+    import datetime
+    today = datetime.date.today().isoformat()
     urls = ["", "projects.html", "about.html", "contact.html", "network-lab-80/"] + [p["slug"] for p in PROJECTS if p["slug"]]
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + \
-          "".join(f"  <url><loc>{SITE}/{u}</loc></url>\n" for u in urls) + "</urlset>\n"
+          "".join(f"  <url><loc>{SITE}/{u}</loc><lastmod>{today}</lastmod></url>\n" for u in urls) + "</urlset>\n"
     (D / "sitemap.xml").write_text(xml)
 
 
