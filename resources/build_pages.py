@@ -15,6 +15,7 @@ GITHUB = "https://github.com/HomemadeICT"
 LINKEDIN = "https://www.linkedin.com/in/theekshana-prabodha/"
 BLOG = "https://blogs.theekmind.com"
 TIMER_APP = "https://tmtimer.theekmind.com"
+PERSON_ID = SITE + "/#person"  # shared with the blog and the timer app; see resources/seo/sites.toml
 CV_FILE = "assets/Theekshana-Prabodha-CV.pdf"
 CV_LIVE = (D / CV_FILE).exists()  # the CV is only linked once the reviewed PDF is copied into docs/assets/
 
@@ -243,9 +244,12 @@ def home():
 <p style="margin-top:20px"><a href="{BLOG}">All articles</a></p>''',
                lead="Clear, practical notes on networking, development, Linux and learning.")
 
-    ld = {"@context": "https://schema.org", "@type": "Person", "name": "Theekshana Prabodha", "url": SITE + "/",
-          "email": EMAIL, "sameAs": [GITHUB, LINKEDIN, BLOG], "image": SITE + "/assets/favicon-512.png",
-          "knowsAbout": ["PHP", "MySQL", "Docker", "Linux", "Cisco networking", "VB.NET"]}
+    ld = {"@context": "https://schema.org", "@graph": [
+        {"@type": "Person", "@id": PERSON_ID, "name": "Theekshana Prabodha", "url": SITE + "/",
+         "email": EMAIL, "sameAs": [GITHUB, LINKEDIN, BLOG, TIMER_APP], "image": SITE + "/assets/favicon-512.png",
+         "knowsAbout": ["PHP", "MySQL", "Docker", "Linux", "Cisco networking", "VB.NET"]},
+        {"@type": "WebSite", "@id": SITE + "/#website", "name": "TheekMind", "url": SITE + "/", "inLanguage": "en",
+         "publisher": {"@id": PERSON_ID}}]}
     page("index.html", "Theekshana Prabodha | TheekMind", "Portfolio of Theekshana Prabodha, an ICT learner and builder from Sri Lanka: PHP, MySQL, Docker, Linux and networking projects.",
          hero + showcase + projects + skills + tm + blog + cta(), jsonld=ld)
 
@@ -516,8 +520,16 @@ def sitemap():
     (D / "sitemap.xml").write_text(xml)
 
 
+def robots():
+    """Lists the sitemaps of all three hosts, from resources/seo/sites.toml."""
+    import tomllib
+    reg = tomllib.loads(Path("resources/seo/sites.toml").read_text())
+    lines = [f"Sitemap: {h['base']}{s}" for h in reg["host"] for s in h["sitemaps"]]
+    (D / "robots.txt").write_text("User-agent: *\nAllow: /\n\n" + "\n".join(lines) + "\n")
+
+
 if __name__ == "__main__":
     home(); projects_page(); about(); contact()
     timer_case(); petty_case(); pos_case(); labs_case(); lab80_case()
-    not_found(); sitemap()
+    not_found(); sitemap(); robots()
     print("built", len(list(D.glob("*.html"))), "pages; CV linked:", CV_LIVE)

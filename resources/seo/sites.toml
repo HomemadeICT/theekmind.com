@@ -1,0 +1,37 @@
+# One registry for the three TheekMind hosts. sitecheck.py checks the live sites against it.
+# robots.txt stays per host (crawlers read it per host); what is shared is listed here once.
+
+person_id = "https://theekmind.com/#person"
+
+[[host]]
+name = "theekmind.com"
+base = "https://theekmind.com"
+platform = "GitHub Pages, docs/ built by resources/build_pages.py"
+sitemaps = ["/sitemap.xml"]
+site_name = "TheekMind"
+person_on = ["/"]
+blocked = []
+noindex = []
+redirects = { "http://theekmind.com/" = "https://theekmind.com/", "https://www.theekmind.com/" = "https://theekmind.com/" }
+
+[[host]]
+name = "blogs.theekmind.com"
+base = "https://blogs.theekmind.com"
+platform = "Blogger (ID 5269840056372838838), Cloudflare proxy"
+sitemaps = ["/sitemap.xml", "/sitemap-pages.xml"]
+site_name = "TheekMind"
+person_on = ["/"]
+blocked = ["/search"]
+noindex = []
+redirects = { "http://blogs.theekmind.com/" = "https://blogs.theekmind.com/" }
+
+[[host]]
+name = "tmtimer.theekmind.com"
+base = "https://tmtimer.theekmind.com"
+platform = "PHP on InfinityFree, deployed by GitHub Actions over FTP"
+sitemaps = ["/sitemap.xml"]
+site_name = "Toastmasters Timer by TheekMind"
+person_on = ["/"]
+blocked = ["/index.php", "/meeting.php", "/timer.php", "/report.php", "/cards.php", "/login.php", "/register.php", "/logout.php", "/api/"]
+noindex = ["/login.php", "/register.php"]
+redirects = { "http://tmtimer.theekmind.com/" = "https://tmtimer.theekmind.com/" }

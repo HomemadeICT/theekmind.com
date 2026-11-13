@@ -1,3 +1,7 @@
 User-agent: *
 Allow: /
+
 Sitemap: https://theekmind.com/sitemap.xml
+Sitemap: https://blogs.theekmind.com/sitemap.xml
+Sitemap: https://blogs.theekmind.com/sitemap-pages.xml
+Sitemap: https://tmtimer.theekmind.com/sitemap.xml
