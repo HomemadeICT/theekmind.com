@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 """Checks theekmind.com, blogs.theekmind.com and tmtimer.theekmind.com against sites.toml.
 
-    python3 resources/seo/sitecheck.py [--host NAME] [--max-urls N]
+    python3 resources/seo/sitecheck.py [--host NAME] [--max-urls N] [--extra-ca PATH]
 
 Exit code 1 if any check FAILs. A host behind a JavaScript bot challenge is reported as
 UNVERIFIABLE and never worked around; use Search Console's URL Inspection for it.
+
+--extra-ca PATH (a PEM file or a folder of .pem files, e.g. resources/seo/ca) is for a host whose
+server sends only its own certificate (tmtimer on InfinityFree). Only if the strict check fails
+with a certificate error is the host retried with those intermediates, and then it is reported
+as WARN, never PASS. Keep only genuine public CA certificates in that folder.
 """
 import argparse
 import json
@@ -13,6 +18,7 @@ import ssl
 import sys
 import tomllib
 import urllib.error
+import urllib.parse
 import urllib.request
 import urllib.robotparser
 from html.parser import HTMLParser
@@ -30,6 +36,20 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 
 OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect)
+EXTRA_OPENER = None  # set by --extra-ca; used only for hosts in EXTRA_HOSTS
+EXTRA_HOSTS = set()
+
+
+def extra_ca_context(path):
+    """System roots plus the certificates in PATH (a PEM file or a folder of .pem files)."""
+    p = Path(path)
+    files = sorted(p.glob("*.pem")) if p.is_dir() else [p]
+    if not files or not all(f.is_file() for f in files):
+        raise SystemExit(f"--extra-ca: no .pem files at {path}")
+    ctx = ssl.create_default_context()
+    for f in files:
+        ctx.load_verify_locations(cafile=str(f))
+    return ctx
 
 
 def fetch(url, tries=2):
@@ -39,8 +59,9 @@ def fetch(url, tries=2):
     certificate errors are not, since a retry can't fix them.
     """
     req = urllib.request.Request(url, headers={"User-Agent": UA})
+    opener = EXTRA_OPENER if EXTRA_OPENER and urllib.parse.urlsplit(url).hostname in EXTRA_HOSTS else OPENER
     try:
-        with OPENER.open(req, timeout=20) as r:
+        with opener.open(req, timeout=20) as r:
             return r.status, r.headers, r.read().decode("utf-8", "replace")
     except urllib.error.HTTPError as e:
         return e.code, e.headers, e.read().decode("utf-8", "replace")
@@ -49,6 +70,9 @@ def fetch(url, tries=2):
         if tries > 1 and not isinstance(reason, ssl.SSLCertVerificationError):
             return fetch(url, tries - 1)
         return 0, {}, f"{reason}"
+
+
+CHALLENGE_NOTE = "bot challenge; check with Search Console URL Inspection"
 
 
 def is_challenge(body):
@@ -168,8 +192,13 @@ def check_host(host, reg, rep, titles, max_urls):
     all_sitemaps = sorted(h["base"] + s for h in reg["host"] for s in h["sitemaps"])
 
     status, _, body = fetch(base + "/robots.txt")
+    if status == 0 and "CERTIFICATE_VERIFY_FAILED" in body and EXTRA_OPENER:
+        EXTRA_HOSTS.add(name)
+        status, _, body = fetch(base + "/robots.txt")
+        if status:
+            rep.add("WARN", name, "certificate chain", "server sends an incomplete chain; verified with the --extra-ca intermediates")
     if is_challenge(body):
-        rep.add("UNVERIFIABLE", name, "robots.txt", "bot challenge; check with Search Console URL Inspection")
+        rep.add("UNVERIFIABLE", name, "robots.txt", CHALLENGE_NOTE)
         return
     if status != 200:
         rep.add("FAIL", name, "robots.txt", f"HTTP {status}" if status else f"connection: {body}")
@@ -187,6 +216,9 @@ def check_host(host, reg, rep, titles, max_urls):
     urls = []
     for sm in host["sitemaps"]:
         status, _, xml = fetch(base + sm)
+        if is_challenge(xml):
+            rep.add("UNVERIFIABLE", name, f"sitemap {sm}", CHALLENGE_NOTE)
+            continue
         try:
             locs = parse_sitemap(xml) if status == 200 else None
         except ElementTree.ParseError:
@@ -198,6 +230,9 @@ def check_host(host, reg, rep, titles, max_urls):
         status, headers, html = fetch(url)
         path = url[len(base):] or "/"
         problems = []
+        if is_challenge(html):
+            rep.add("UNVERIFIABLE", name, path[:22], CHALLENGE_NOTE)
+            continue
         if status != 200:
             problems.append(f"HTTP {status}")
         else:
@@ -223,11 +258,17 @@ def check_host(host, reg, rep, titles, max_urls):
 
     for path in host["noindex"]:
         status, headers, html = fetch(base + path)
+        if is_challenge(html):
+            rep.add("UNVERIFIABLE", name, f"noindex {path}", CHALLENGE_NOTE)
+            continue
         ok = "noindex" in (headers.get("X-Robots-Tag") or "").lower() or page_facts(html)["noindex"]
         rep.add("PASS" if ok else "FAIL", name, f"noindex {path}", "" if ok else "page can be indexed")
 
     for src, dst in host["redirects"].items():
-        status, headers, _ = fetch(src)
+        status, headers, body = fetch(src)
+        if is_challenge(body):
+            rep.add("UNVERIFIABLE", name, "redirect", f"{src}: {CHALLENGE_NOTE}")
+            continue
         ok = status in (301, 308) and headers.get("Location") == dst
         rep.add("PASS" if ok else "FAIL", name, "redirect", f"{src} -> {status} {headers.get('Location')}")
 
@@ -236,7 +277,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--host")
     ap.add_argument("--max-urls", type=int, default=50)
+    ap.add_argument("--extra-ca", metavar="PATH", help="PEM file or folder of intermediates for hosts that send an incomplete chain")
     args = ap.parse_args()
+    if args.extra_ca:
+        global EXTRA_OPENER
+        EXTRA_OPENER = urllib.request.build_opener(
+            urllib.request.ProxyHandler({}), NoRedirect, urllib.request.HTTPSHandler(context=extra_ca_context(args.extra_ca)))
     reg = tomllib.loads(REGISTRY.read_text())
     rep, titles = Report(), {}
     for host in reg["host"]:
@@ -246,7 +292,7 @@ def main():
         hosts = {u.split("/")[2] for u in urls}
         if len(hosts) > 1:
             rep.add("FAIL", "cross-host", "duplicate title", f"{title!r}: {', '.join(urls)}")
-    counts = {s: sum(r[0] == s for r in rep.rows) for s in ("PASS", "FAIL", "UNVERIFIABLE", "SKIP")}
+    counts = {s: sum(r[0] == s for r in rep.rows) for s in ("PASS", "WARN", "FAIL", "UNVERIFIABLE", "SKIP")}
     print("\n" + ", ".join(f"{v} {k}" for k, v in counts.items() if v))
     sys.exit(1 if rep.failed else 0)
 

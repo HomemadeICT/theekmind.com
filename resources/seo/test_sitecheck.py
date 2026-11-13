@@ -1,4 +1,9 @@
+import contextlib
+import io
+import tempfile
 import unittest
+from pathlib import Path
+from unittest import mock
 
 import sitecheck as sc
 
@@ -72,6 +77,58 @@ class PageTest(unittest.TestCase):
     def test_challenge(self):
         self.assertTrue(sc.is_challenge('<script src="/aes.js"></script>document.cookie="__test=..."'))
         self.assertFalse(sc.is_challenge("User-agent: *"))
+
+
+class ChallengeTest(unittest.TestCase):
+    def test_challenge_on_later_requests_is_unverifiable_not_a_failure(self):
+        host = {"name": "h.example", "base": "https://h.example", "sitemaps": ["/sitemap.xml"], "blocked": [],
+                "noindex": ["/login.php"], "redirects": {"http://h.example/": "https://h.example/"}, "person_on": [], "site_name": "x"}
+        challenge = '<script src="/aes.js"></script> __test'
+        answers = {"https://h.example/robots.txt": (200, {}, "User-agent: *\nAllow: /\nSitemap: https://h.example/sitemap.xml\n")}
+        rep = sc.Report()
+        with mock.patch.object(sc, "fetch", side_effect=lambda u: answers.get(u, (200, {}, challenge))), \
+                contextlib.redirect_stdout(io.StringIO()):
+            sc.check_host(host, {"host": [host], "person_id": "p"}, rep, {}, 5)
+        by_check = {r[2]: r[0] for r in rep.rows}
+        self.assertEqual(by_check["sitemap /sitemap.xml"], "UNVERIFIABLE")
+        self.assertEqual(by_check["noindex /login.php"], "UNVERIFIABLE")
+        self.assertEqual(by_check["redirect"], "UNVERIFIABLE")
+        self.assertFalse(rep.failed)
+
+
+class ExtraCaTest(unittest.TestCase):
+    CA_DIR = Path(__file__).with_name("ca")
+
+    def test_context_loads_the_intermediates(self):
+        subjects = [str(c["subject"]) for c in sc.extra_ca_context(self.CA_DIR).get_ca_certs()]
+        self.assertTrue(any("YR1" in s for s in subjects))
+        self.assertTrue(any("Root YR" in s for s in subjects))
+
+    def test_missing_path_is_an_error(self):
+        with tempfile.TemporaryDirectory() as empty:
+            with self.assertRaises(SystemExit):
+                sc.extra_ca_context(empty)
+
+    def test_cert_error_falls_back_to_warn_not_pass(self):
+        host = {"name": "h.example", "base": "https://h.example", "sitemaps": [], "blocked": [], "noindex": [], "redirects": {}, "person_on": [], "site_name": "x"}
+        reg = {"host": [host], "person_id": "p"}
+        answers = [(0, {}, "[SSL: CERTIFICATE_VERIFY_FAILED] unable to get local issuer certificate"),
+                   (200, {}, "User-agent: *\nAllow: /\n")]
+        rep = sc.Report()
+        with mock.patch.object(sc, "EXTRA_OPENER", object()), mock.patch.object(sc, "fetch", side_effect=answers), \
+                mock.patch.object(sc, "EXTRA_HOSTS", set()), contextlib.redirect_stdout(io.StringIO()):
+            sc.check_host(host, reg, rep, {}, 5)
+        statuses = {r[2]: r[0] for r in rep.rows}
+        self.assertEqual(statuses["certificate chain"], "WARN")
+        self.assertFalse(rep.failed)
+
+    def test_without_extra_ca_a_cert_error_still_fails(self):
+        host = {"name": "h.example", "base": "https://h.example", "sitemaps": [], "blocked": [], "noindex": [], "redirects": {}, "person_on": [], "site_name": "x"}
+        rep = sc.Report()
+        with mock.patch.object(sc, "EXTRA_OPENER", None), contextlib.redirect_stdout(io.StringIO()), \
+                mock.patch.object(sc, "fetch", return_value=(0, {}, "[SSL: CERTIFICATE_VERIFY_FAILED]")):
+            sc.check_host(host, {"host": [host], "person_id": "p"}, rep, {}, 5)
+        self.assertTrue(rep.failed)
 
 
 if __name__ == "__main__":
