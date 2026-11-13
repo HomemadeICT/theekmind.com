@@ -9,6 +9,7 @@ UNVERIFIABLE and never worked around; use Search Console's URL Inspection for it
 import argparse
 import json
 import re
+import ssl
 import sys
 import tomllib
 import urllib.error
@@ -31,8 +32,12 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect)
 
 
-def fetch(url):
-    """Returns (status, headers, body) without following redirects or using a proxy."""
+def fetch(url, tries=2):
+    """Returns (status, headers, body) without following redirects or using a proxy.
+
+    Connection errors are retried once (the home LTE link drops handshakes now and then);
+    certificate errors are not, since a retry can't fix them.
+    """
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     try:
         with OPENER.open(req, timeout=20) as r:
@@ -40,7 +45,10 @@ def fetch(url):
     except urllib.error.HTTPError as e:
         return e.code, e.headers, e.read().decode("utf-8", "replace")
     except (urllib.error.URLError, TimeoutError) as e:
-        return 0, {}, f"{getattr(e, 'reason', e)}"
+        reason = getattr(e, "reason", e)
+        if tries > 1 and not isinstance(reason, ssl.SSLCertVerificationError):
+            return fetch(url, tries - 1)
+        return 0, {}, f"{reason}"
 
 
 def is_challenge(body):
